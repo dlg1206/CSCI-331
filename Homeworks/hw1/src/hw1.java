@@ -4,25 +4,32 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Uses Dijkstra's algorithm to find word ladders
+ * file: hw1.java
+ *
+ * CSCI-331 HW1
+ * Uses Dijkstra's algorithm to find the shortest path from a start to end word
  *
  * @author Derek Garcia
  **/
 
 public class hw1 {
-   private static class Node {
+
+    /**
+     * Internal Node Class to track edges
+     */
+    private static class Node {
 
         private final String word;
         private final LinkedList<Node> edges;   // adj list
 
-        private int distance = -1;
+        private int distance = -1;  // -1 indicates node hasn't been visited
         private Node path = null;
 
 
         /**
-         * Node Constructor. builds node
+         * Node Constructor. Builds node
          *
-         * @param word word
+         * @param word word that node represents
          */
         public Node(String word) {
             this.word = word;
@@ -48,7 +55,6 @@ public class hw1 {
         public Node getParent(){
             return this.path;
         }
-
 
         ///
         /// Setters
@@ -78,6 +84,13 @@ public class hw1 {
             this.edges.add(node);
         }
 
+
+        /**
+         * Calculates if other node is an adjacent node
+         *
+         * @param other other node to test
+         * @return true if adjacent, false otherwise
+         */
         public boolean isAdjacent(Node other){
             // adjacent nodes must be the same length
             if(this.word.length() != other.toString().length())
@@ -125,6 +138,7 @@ public class hw1 {
         while (line != null){
             Node newNode = new Node(line);
 
+            // Update graph with new node info
             for(Node oldNode : graph){
                 // if nodes adjacent, add an edge
                 if(oldNode.isAdjacent(newNode)){
@@ -132,6 +146,7 @@ public class hw1 {
                     newNode.addEdge(oldNode);
                 }
             }
+            // add the new node
             graph.add(newNode);
             line = br.readLine();
         }
@@ -147,17 +162,12 @@ public class hw1 {
      */
     private static void doDijkstra(Node source){
 
-        // init vars
+        // init queue
         LinkedList<Node> queue = new LinkedList<>();
-        HashMap<Integer, ArrayList<Node>> result = new HashMap<>();
 
         // Get and set initial node
         Node curNode = source;
         curNode.setDistance(0);
-
-        // add to results
-        result.put(0, new ArrayList<>());
-        result.get(0).add(curNode);
 
         // Repeat until nothing is left in the queue
         for( ;; ){
@@ -175,20 +185,9 @@ public class hw1 {
                 // If distance hasn't been set or the new distance is better
                 if(adj.getDistance() < 0 || adj.getDistance() > newDist){
 
-                    // make new key if needed
-                    if(!result.containsKey(newDist))
-                        result.put(newDist, new ArrayList<>());
-
-                    // if improving distance, remove from old distance
-                    if(adj.getDistance() >= 0)
-                        result.get(adj.getDistance()).remove(adj);
-
                     // Update values
                     adj.setDistance(newDist);
                     adj.setPath(curNode);
-
-                    // update result
-                    result.get(newDist).add(adj);
                 }
             }
 
@@ -209,19 +208,19 @@ public class hw1 {
      * @param dest destination node
      */
     private static void printPath(Node source, Node dest){
-
-        // build string from dest back to source
         StringBuilder path = new StringBuilder();
+
         while(dest != source){
+            path.insert(0, "\n" + dest);
+            dest = dest.getParent();
+
+            // if the new destination is null, then no path exists
             if(dest == null){
                 System.out.println("No Solution");
                 return;
             }
-            path.append(dest).append("\n");
-            dest = dest.getParent();
         }
-
-        path.append(source);    // add source
+        path.insert(0, source);    // add source
 
         // print full string
         System.out.println(path);
@@ -248,34 +247,36 @@ public class hw1 {
 
 
     /**
-     * Runs WordLadder
+     * Begins search for path between words
+     *
      * @param args [dictionary source] [start word] [target word]
      */
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
-        if(args.length != 3){
+        // Check for correct number of args
+        if (args.length != 3) {
             System.err.println("Incorrect number of arguments; expected <dictionary path> <start word> <target word> ");
             return;
         }
+
+        // Attempt to create graph
         ArrayList<Node> graph;
-        try{
-            // Make graph
+        try {
             graph = parseDict(args[0]);
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Failed to read file: " + args[0]);
             return;
         }
 
-
-        // get result
+        // Get target nodes
         Node source = getByString(graph, args[1]);
         Node dest = getByString(graph, args[2]);
-        if(source == null || dest == null)
-            return;
+        if (source == null || dest == null)
+            return; // attempted to use invalid word
 
-        doDijkstra(source);  // use given source
+        // Perform Dijkstra algorithm from source
+        doDijkstra(source);
         // print specific path
         printPath(getByString(graph, args[1]), dest);
-
     }
 }
