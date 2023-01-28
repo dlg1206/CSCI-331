@@ -12,9 +12,8 @@ import java.util.*;
 public class hw1 {
    private static class Node {
 
-        private final int id;                               // node id
-        private String word;
-        private final LinkedHashMap<Node, Integer> edges;   // adj list
+        private final String word;
+        private final LinkedList<Node> edges;   // adj list
 
         private int distance = -1;
         private Node path = null;
@@ -23,30 +22,20 @@ public class hw1 {
         /**
          * Node Constructor. builds node
          *
-         * @param id id of node
+         * @param word word
          */
-        public Node(int id, String word) {
-            this.id = id;
+        public Node(String word) {
             this.word = word;
-            this.edges = new LinkedHashMap<>();
+            this.edges = new LinkedList<>();
         }
 
-        public Node(int id){
-            this.id = id;
-            this.edges = new LinkedHashMap<>();
-        }
 
         ///
         /// Getters
         ///
 
-        // get id
-        public int getId() {
-            return this.id;
-        }
-
         // get edges
-        public LinkedHashMap<Node, Integer> getEdges(){
+        public LinkedList<Node> getEdges(){
             return this.edges;
         }
 
@@ -75,10 +64,6 @@ public class hw1 {
             this.path = path;
         }
 
-        // set word
-        public void setWord(String word){
-            this.word = word;
-        }
 
         ///
         /// Methods
@@ -88,20 +73,28 @@ public class hw1 {
          * Adds an edge to this node's adj list
          *
          * @param node adj node
-         * @param distance set distance / weight of edge
          */
-        public void addEdge(Node node, int distance ) {
-            this.edges.put(node, distance);
+        public void addEdge(Node node) {
+            this.edges.add(node);
         }
 
-        /**
-         * Gets the distance / weight of an edge connecting an adj node
-         *
-         * @param otherEnd node on other
-         * @return distance, null if node doesn't exist
-         */
-        public int getEdgeWeight(Node otherEnd){
-            return this.edges.get(otherEnd);
+        public boolean isAdjacent(Node other){
+            // adjacent nodes must be the same length
+            if(this.word.length() != other.toString().length())
+                return false;
+
+            // Compare strings
+            int cost = 0;
+            for(int i = 0; i < this.word.length(); i++){
+                // compare characters
+                if(this.word.charAt(i) != other.toString().charAt(i))
+                    cost++;
+                // if differ by more than 1 letter, not adjacent
+                if( cost > 1)
+                    return false;
+            }
+            // only differ by 1
+            return true;
         }
 
         // prints node correctly
@@ -120,49 +113,26 @@ public class hw1 {
      * @return graph
      * @throws IOException filename is bad
      */
-    private static Node[] parseFile(String fileName) throws IOException {
+    private static ArrayList<Node> parseDict(String fileName) throws IOException {
         // Create new Buffered Reader
         BufferedReader br = new BufferedReader(new FileReader(fileName));
-        int numNodes = Integer.parseInt(br.readLine().split(" ")[0]);  // get number of nodes
 
-        Node[] graph = new Node[numNodes + 1];  // +1 to so nodeID == Index
+        ArrayList<Node> graph = new ArrayList<>();
 
         String line = br.readLine();    // get first node info
 
         // Read entire file
         while (line != null){
+            Node newNode = new Node(line);
 
-            int nodeID = Integer.parseInt(line.split("[\\[\\]]")[1]);   // parse line to get ID
-
-            String[] adjNodes = line.split(" ");    // gets adj nodes
-
-            // init full node if needed
-            if(graph[nodeID] == null){
-                graph[nodeID] = new Node(nodeID, adjNodes[1]);
-            // Else previously defined, just update word
-            } else {
-                graph[nodeID].setWord(adjNodes[1]);
-            }
-
-            Node curNode = graph[nodeID];
-
-            // Add all adj nodes
-            for(int i = 2; i < adjNodes.length; i++){
-
-                String adj = adjNodes[i];
-
-                // get node and distance
-                int adjID = Integer.parseInt(adj.split(":")[0]);
-                int distance = Integer.parseInt(adj.split(":")[1]);
-
-                // Init adj node if needed
-                if(graph[adjID] == null){
-                    graph[adjID] =  new Node(adjID);
+            for(Node oldNode : graph){
+                // if nodes adjacent, add an edge
+                if(oldNode.isAdjacent(newNode)){
+                    oldNode.addEdge(newNode);
+                    newNode.addEdge(oldNode);
                 }
-
-                curNode.addEdge(graph[adjID], distance);
             }
-
+            graph.add(newNode);
             line = br.readLine();
         }
 
@@ -178,59 +148,60 @@ public class hw1 {
      */
     private static HashMap<Integer, ArrayList<Node>> doDijkstra(Node source){
 
-        // init vars
-        LinkedList<Node> queue = new LinkedList<>();
-        HashMap<Integer, ArrayList<Node>> result = new HashMap<>();
-
-        // Get and set initial node
-        Node curNode = source;
-        curNode.setDistance(0);
-
-        // add to results
-        result.put(0, new ArrayList<>());
-        result.get(0).add(curNode);
-
-        // Repeat until nothing is left in the queue
-        for( ;; ){
-
-            // Go through all od the adjacent nodes to current node
-            for(Node adj : curNode.getEdges().keySet()){
-
-                // Add to queue if adj hasn't been visited and not already in queue
-                if(adj.getDistance() < 0 && !queue.contains(adj)){
-                    queue.add(adj);
-                }
-
-                int newDist = curNode.getDistance() + curNode.getEdgeWeight(adj);   // calculate new distance
-
-                // If distance hasn't been set or the new distance is better
-                if(adj.getDistance() < 0 || adj.getDistance() > newDist){
-
-                    // make new key if needed
-                    if(!result.containsKey(newDist))
-                        result.put(newDist, new ArrayList<>());
-
-                    // if improving distance, remove from old distance
-                    if(adj.getDistance() >= 0)
-                        result.get(adj.getDistance()).remove(adj);
-
-                    // Update values
-                    adj.setDistance(newDist);
-                    adj.setPath(curNode);
-
-                    // update result
-                    result.get(newDist).add(adj);
-                }
-            }
-
-            // End if queue is empty, else get next node
-            if(queue.isEmpty()){
-                break;
-            } else {
-                curNode = queue.pop();
-            }
-        }
-        return result;
+//        // init vars
+//        LinkedList<Node> queue = new LinkedList<>();
+//        HashMap<Integer, ArrayList<Node>> result = new HashMap<>();
+//
+//        // Get and set initial node
+//        Node curNode = source;
+//        curNode.setDistance(0);
+//
+//        // add to results
+//        result.put(0, new ArrayList<>());
+//        result.get(0).add(curNode);
+//
+//        // Repeat until nothing is left in the queue
+//        for( ;; ){
+//
+//            // Go through all od the adjacent nodes to current node
+//            for(Node adj : curNode.getEdges().keySet()){
+//
+//                // Add to queue if adj hasn't been visited and not already in queue
+//                if(adj.getDistance() < 0 && !queue.contains(adj)){
+//                    queue.add(adj);
+//                }
+//
+//                int newDist = curNode.getDistance() + curNode.getEdgeWeight(adj);   // calculate new distance
+//
+//                // If distance hasn't been set or the new distance is better
+//                if(adj.getDistance() < 0 || adj.getDistance() > newDist){
+//
+//                    // make new key if needed
+//                    if(!result.containsKey(newDist))
+//                        result.put(newDist, new ArrayList<>());
+//
+//                    // if improving distance, remove from old distance
+//                    if(adj.getDistance() >= 0)
+//                        result.get(adj.getDistance()).remove(adj);
+//
+//                    // Update values
+//                    adj.setDistance(newDist);
+//                    adj.setPath(curNode);
+//
+//                    // update result
+//                    result.get(newDist).add(adj);
+//                }
+//            }
+//
+//            // End if queue is empty, else get next node
+//            if(queue.isEmpty()){
+//                break;
+//            } else {
+//                curNode = queue.pop();
+//            }
+//        }
+//        return result;
+        return null;
     }
 
     /**
@@ -308,40 +279,46 @@ public class hw1 {
 
     /**
      * Runs WordLadder
-     * @param args [filename] [source] [destination (optional)]
-     * @throws IOException filename is bad
+     * @param args [dictionary source] [start word] [target word]
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
 
-        // Make graph
-        Node[] graph = parseFile(args[0]);
+        if(args.length != 3){
+            System.err.println("Incorrect number of arguments; expected <dictionary path> <start word> <target word> ");
+            return;
+        }
+        ArrayList<Node> graph;
+        try{
+            // Make graph
+            graph = parseDict(args[0]);
+        } catch (Exception e){
+            System.err.println("Failed to read file: " + args[0]);
+            return;
+        }
+
 
         // get result
-        HashMap<Integer, ArrayList<Node>> result;
-        if(args.length > 1){
-            // validate source exists
-            Node source = getByString(graph, args[1]);
-            if(source == null){
-                System.out.println(args[1] + " was not found");
-                return;
-            }
-            result = doDijkstra(source);  // use given source
-        } else {
-            result = doDijkstra(graph[1]);  // default to Node 1
-        }
-
-        // print full if no destination given
-        if(args.length != 3){
-            printResults(result);
-        } else {
-            // validate destination exists
-            Node dest = getByString(graph, args[2]);
-            if(dest == null){
-                System.out.println(args[2] + " was not found");
-                return;
-            }
-            // print specific path
-            printPath(getByString(graph, args[1]), dest);
-        }
+//        HashMap<Integer, ArrayList<Node>> result;
+//        Node source = getByString(graph, args[1]);
+//        if(source == null){
+//            System.out.println(args[1] + " was not found");
+//            return;
+//        }
+//        result = doDijkstra(source);  // use given source
+//
+//
+//        // print full if no destination given
+//        if(args.length != 3){
+//            printResults(result);
+//        } else {
+//            // validate destination exists
+//            Node dest = getByString(graph, args[2]);
+//            if(dest == null){
+//                System.out.println(args[2] + " was not found");
+//                return;
+//            }
+//            // print specific path
+//            printPath(getByString(graph, args[1]), dest);
+//        }
     }
 }
