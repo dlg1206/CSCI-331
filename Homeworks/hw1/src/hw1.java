@@ -144,93 +144,62 @@ public class hw1 {
      * Completes Dijkstra Algorithm
      *
      * @param source Node to start at
-     * @return the resulting distance and paths
      */
-    private static HashMap<Integer, ArrayList<Node>> doDijkstra(Node source){
+    private static void doDijkstra(Node source){
 
-//        // init vars
-//        LinkedList<Node> queue = new LinkedList<>();
-//        HashMap<Integer, ArrayList<Node>> result = new HashMap<>();
-//
-//        // Get and set initial node
-//        Node curNode = source;
-//        curNode.setDistance(0);
-//
-//        // add to results
-//        result.put(0, new ArrayList<>());
-//        result.get(0).add(curNode);
-//
-//        // Repeat until nothing is left in the queue
-//        for( ;; ){
-//
-//            // Go through all od the adjacent nodes to current node
-//            for(Node adj : curNode.getEdges().keySet()){
-//
-//                // Add to queue if adj hasn't been visited and not already in queue
-//                if(adj.getDistance() < 0 && !queue.contains(adj)){
-//                    queue.add(adj);
-//                }
-//
-//                int newDist = curNode.getDistance() + curNode.getEdgeWeight(adj);   // calculate new distance
-//
-//                // If distance hasn't been set or the new distance is better
-//                if(adj.getDistance() < 0 || adj.getDistance() > newDist){
-//
-//                    // make new key if needed
-//                    if(!result.containsKey(newDist))
-//                        result.put(newDist, new ArrayList<>());
-//
-//                    // if improving distance, remove from old distance
-//                    if(adj.getDistance() >= 0)
-//                        result.get(adj.getDistance()).remove(adj);
-//
-//                    // Update values
-//                    adj.setDistance(newDist);
-//                    adj.setPath(curNode);
-//
-//                    // update result
-//                    result.get(newDist).add(adj);
-//                }
-//            }
-//
-//            // End if queue is empty, else get next node
-//            if(queue.isEmpty()){
-//                break;
-//            } else {
-//                curNode = queue.pop();
-//            }
-//        }
-//        return result;
-        return null;
-    }
+        // init vars
+        LinkedList<Node> queue = new LinkedList<>();
+        HashMap<Integer, ArrayList<Node>> result = new HashMap<>();
 
-    /**
-     * Prints all the paths that stem from the source node
-     *
-     * @param result A hashmap of distances and all nodes that are that distance away
-     */
-    private static void printResults(HashMap<Integer, ArrayList<Node>> result){
+        // Get and set initial node
+        Node curNode = source;
+        curNode.setDistance(0);
 
-        // sort the keys from least to greatest distance
-        ArrayList<Integer> distances = new ArrayList<>(result.keySet());
-        Collections.sort(distances);
+        // add to results
+        result.put(0, new ArrayList<>());
+        result.get(0).add(curNode);
 
-        // go through all distances
-        for(int dist : distances){
+        // Repeat until nothing is left in the queue
+        for( ;; ){
 
-            // For each node at distance dist
-            for(Node node : result.get(dist)){
-                System.out.print(dist + ": ");
+            // Go through all od the adjacent nodes to current node
+            for(Node adj : curNode.getEdges()){
 
-                // Continue backtracking until reach source node
-                while(node.getParent() != null){
-                    System.out.print(node + "<");
-                    node = node.getParent();
+                // Add to queue if adj hasn't been visited and not already in queue
+                if(adj.getDistance() < 0 && !queue.contains(adj)){
+                    queue.add(adj);
                 }
 
-                System.out.println(node);   // print source
+                int newDist = curNode.getDistance() + 1;   // All edges have a weight of 1
+
+                // If distance hasn't been set or the new distance is better
+                if(adj.getDistance() < 0 || adj.getDistance() > newDist){
+
+                    // make new key if needed
+                    if(!result.containsKey(newDist))
+                        result.put(newDist, new ArrayList<>());
+
+                    // if improving distance, remove from old distance
+                    if(adj.getDistance() >= 0)
+                        result.get(adj.getDistance()).remove(adj);
+
+                    // Update values
+                    adj.setDistance(newDist);
+                    adj.setPath(curNode);
+
+                    // update result
+                    result.get(newDist).add(adj);
+                }
+            }
+
+            // End if queue is empty, else get next node
+            if(queue.isEmpty()){
+                break;
+            } else {
+                curNode = queue.pop();
             }
         }
+
     }
 
     /**
@@ -241,20 +210,21 @@ public class hw1 {
      */
     private static void printPath(Node source, Node dest){
 
-        int dist = 0;   // init dist is 0
-
         // build string from dest back to source
         StringBuilder path = new StringBuilder();
         while(dest != source){
-            path.append(dest).append("<");
+            if(dest == null){
+                System.out.println("No Solution");
+                return;
+            }
+            path.append(dest).append("\n");
             dest = dest.getParent();
-            dist++;
         }
 
         path.append(source);    // add source
 
         // print full string
-        System.out.println(dist +": " + path);
+        System.out.println(path);
     }
 
     /**
@@ -264,15 +234,15 @@ public class hw1 {
      * @param word word to find node of
      * @return Node if exists, null otherwise
      */
-    private static Node getByString(Node[] graph, String word){
-        // search through graph
-        for(int i = 1; i < graph.length; i++){
-           // check if word equal
-           if(graph[i].toString().equals(word)){
-               return graph[i];
-           }
+    private static Node getByString(ArrayList<Node> graph, String word){
+        for(Node node : graph){
+            if(node.toString().equals(word)){
+                return node;
+            }
         }
+
         // no node was found
+        System.out.println(word + " was not found");
         return null;
     }
 
@@ -298,27 +268,14 @@ public class hw1 {
 
 
         // get result
-//        HashMap<Integer, ArrayList<Node>> result;
-//        Node source = getByString(graph, args[1]);
-//        if(source == null){
-//            System.out.println(args[1] + " was not found");
-//            return;
-//        }
-//        result = doDijkstra(source);  // use given source
-//
-//
-//        // print full if no destination given
-//        if(args.length != 3){
-//            printResults(result);
-//        } else {
-//            // validate destination exists
-//            Node dest = getByString(graph, args[2]);
-//            if(dest == null){
-//                System.out.println(args[2] + " was not found");
-//                return;
-//            }
-//            // print specific path
-//            printPath(getByString(graph, args[1]), dest);
-//        }
+        Node source = getByString(graph, args[1]);
+        Node dest = getByString(graph, args[2]);
+        if(source == null || dest == null)
+            return;
+
+        doDijkstra(source);  // use given source
+        // print specific path
+        printPath(getByString(graph, args[1]), dest);
+
     }
 }
