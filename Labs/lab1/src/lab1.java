@@ -18,6 +18,11 @@ public class lab1 {
     // path-file
     // x0, y0: origin
     // xn, yn
+//    private enum TERRAIN_TYPE {
+//        OPEN_LAND,
+//
+//    }
+
     public static void main(String[] args) {
         // Check for correct args
         if(args.length != 4){
