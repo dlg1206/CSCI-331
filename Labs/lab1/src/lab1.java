@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.LinkedList;
 
 /**
@@ -14,6 +15,8 @@ import java.util.LinkedList;
  * @author Derek Garcia
  **/
 public class lab1 {
+
+    private static double[][] ELEVATIONS;
 
     private static class Coordinate{
         public int x;
@@ -30,32 +33,12 @@ public class lab1 {
     }
 
 
-
-//    private class Terrain extends Coordinate{
-//
-//        public Terrain(int x, int y, Color pxlColor) {
-//            super(x, y);
-//        }
-//    }
-    // 1px = 10.29m x 7.55m area
-
-    // terrain image to read? (395x500)
-
-    // elevation file (500x400-5)
-    // maps 1 px
-
-    // path-file
-    // x0, y0: origin
-    // xn, yn
-//    private enum TERRAIN_TYPE {
-//        OPEN_LAND,
-//
-//    }
     private static void doAStarSearch(BufferedImage terrain){
 
     }
 
-    private static LinkedList<Coordinate> pathFileToCoords(String pathFile) throws Exception {
+
+    private static LinkedList<Coordinate> loadGoalCoords(String pathFile) throws Exception {
         try{
             BufferedReader br = new BufferedReader(new FileReader(pathFile));
             LinkedList<Coordinate> coords = new LinkedList<>();
@@ -66,8 +49,38 @@ public class lab1 {
             br.close();
             return coords;
         } catch (Exception e){
-            throw new Exception("Unable to Read Path File");
+            System.err.println("Unable to read file \"" + pathFile + "\" into coordinates");
+            throw e;
         }
+    }
+
+
+    private static double[][] loadElevations(String elevationFile) throws IOException {
+        try{
+            System.out.println("Loading Elevations file. . .");
+            BufferedReader br = new BufferedReader(new FileReader(elevationFile));
+            double[][] elevations = new double[500][395];     // elevations hardcoded as per assignment
+            int row = 0;
+            while(br.ready()){
+                String[] elevation = br.readLine().strip().split("   ");
+
+                // Add each double.
+                for(int col = 0; col < 395; col++)
+                    elevations[row][col] = Double.parseDouble(elevation[col]);
+                row++;
+            }
+            br.close();
+            System.out.println("Complete!");
+            return elevations;
+
+        } catch (Exception e){
+            System.err.println("Unable to read file \"" + elevationFile + "\" into array");
+            throw e;
+        }
+    }
+
+    private static double getElevationAt(int x, int y){
+        return ELEVATIONS[y][x];    // index row column vs x y
     }
 
     private static void drawPath(BufferedImage terrain, LinkedList<Coordinate> path){
@@ -86,7 +99,8 @@ public class lab1 {
         // attempt to load objects
         try{
             BufferedImage terrain = ImageIO.read(new File(args[0]));
-            LinkedList<Coordinate> goals = pathFileToCoords(args[2]);
+            ELEVATIONS = loadElevations(args[1]);
+            LinkedList<Coordinate> goals = loadGoalCoords(args[2]);
             drawPath(terrain, goals);
             ImageIO.write(terrain, "png", new File(args[3]));
         } catch (Exception e){
