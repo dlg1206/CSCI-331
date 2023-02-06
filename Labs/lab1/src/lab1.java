@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * file: lab1.java
@@ -19,6 +19,8 @@ import java.util.LinkedList;
 public class lab1 {
 
     private static double[][] ELEVATIONS;   // obj to track elevations
+    private static double X_DIST = 10.29;
+    private static double Y_DIST = 7.55;
 
     //
     // Utility Objects
@@ -28,8 +30,15 @@ public class lab1 {
      * Coordinate class to track coordinates
      */
     private static class Coordinate{
-        public int x;
-        public int y;
+        private final int x;
+        private final int y;
+
+        private double f;
+
+        private final double elevation;
+
+        private double totalDistance;   // totalDistance from start
+        private Coordinate parent = null;
 
         /**
          * Make new Coordinate
@@ -39,12 +48,56 @@ public class lab1 {
         public Coordinate(int x, int y){
             this.x = x;
             this.y = y;
+            this.elevation = getElevationAt(x, y);
         }
+
+        /**
+         * Make new Successor Coordinate
+         * @param x x value
+         * @param y y value
+         */
+        public Coordinate(int x, int y, Coordinate parent){
+            this.x = x;
+            this.y = y;
+            this.elevation = getElevationAt(x, y);
+            this.parent = parent;
+            this.totalDistance = calcDistance(parent);
+        }
+
+        //
+        // Methods
+        //
+
+        private double calcDistance(Coordinate other){
+            double xDist = (this.x - other.x)^2;
+            double yDist = (this.y - other.y)^2;
+            double zDist = this.elevation - other.elevation;
+            zDist = zDist * zDist;
+            return Math.sqrt( (X_DIST * xDist) + (Y_DIST * yDist) + zDist);
+        }
+
+        public LinkedList<Coordinate> getSuccessors(){
+            LinkedList<Coordinate> successors = new LinkedList<>();
+            for(int x = -1; x < 2; x++){
+                for(int y = -1; y < 2; y++){
+                    // Don't add current not to successors
+                    if(x != 0 || y != 0)
+                        successors.add(new Coordinate(this.x + x, this.y + y, this));
+                }
+            }
+            return successors;
+        }
+
+       public boolean isSame(Coordinate other){
+            return this.x == other.x && this.y == other.y;
+       }
+
         @Override
         public String toString(){
             return "x: " + this.x + " y: " + this.y;
         }
     }
+    
 
 
     //
@@ -120,7 +173,7 @@ public class lab1 {
     ///
 
     /**
-     * Helps index elvations as to not get row / column and x and y confused
+     * Helps index elevations as to not get row / column and x and y confused
      *
      * @param x x coordinate
      * @param y y coordinate
@@ -132,13 +185,70 @@ public class lab1 {
 
 
 
-    private static void drawPath(BufferedImage terrain, LinkedList<Coordinate> path){
-        for(Coordinate c : path)
-            terrain.setRGB(c.x, c.y, Color.red.getRGB());
+    private static void drawPath(BufferedImage terrain, Coordinate goal){
+        while(goal != null){
+            terrain.setRGB(goal.x, goal.y, Color.red.getRGB());
+            goal = goal.parent;
+        }
+
     }
 
-    private static void doAStarSearch(BufferedImage terrain){
+    private static int getHeuristic(int color){
+        // todo
+        // check each pixel from start to goal and apply difficult factor base on terrain type
+        return 0;
+    }
 
+    private static Coordinate doAStarSearch(BufferedImage terrain, Coordinate source, Coordinate sink){
+        // init queues
+        LinkedList<Coordinate> frontier = new LinkedList<>();
+        LinkedList<Coordinate> explored = new LinkedList<>();
+
+        // Get and set initial Coordinate
+        source.totalDistance = 0;
+        frontier.push(source);
+
+        // Repeat until nothing is left in the frontier
+        while( !frontier.isEmpty() ){
+
+            Coordinate curCoordinate = frontier.pop();
+
+            // Go through all current coordinate's successor
+            for(Coordinate successor : curCoordinate.getSuccessors()){
+
+                // if find goal, return Coordinate with path info
+                if(successor.isSame(sink))
+                    return successor;
+
+                successor.totalDistance += curCoordinate.totalDistance; // already has distance from parent
+
+                // successor.f = successor.totalDistance + getHeuristic(1);
+                boolean skipSuccessor = false;
+                // todo replace to vist / visit with sets and add hashfunt to comp
+                for(Coordinate c : frontier){
+                    if(c.isSame(successor) && c.f < successor.f){
+                        skipSuccessor = true;
+                        break;
+                    }
+                }
+                if(skipSuccessor)
+                    break;
+
+                for(Coordinate c : explored){
+                    if(c.isSame(successor) && c.f < successor.f){
+                        skipSuccessor = true;
+                        break;
+                    }
+                }
+                if(skipSuccessor)
+                    break;
+                frontier.add(successor);
+            }
+            explored.push(curCoordinate);
+        }
+
+        // No path was found :(
+        return null;
     }
 
     /**
@@ -155,15 +265,32 @@ public class lab1 {
         }
 
         // attempt to load objects
+        BufferedImage terrain;
+        LinkedList<Coordinate> goals;
         try{
-            BufferedImage terrain = ImageIO.read(new File(args[0]));
+            terrain = ImageIO.read(new File(args[0]));
             ELEVATIONS = loadElevations(args[1]);
-            LinkedList<Coordinate> goals = loadGoalCoords(args[2]);
-            drawPath(terrain, goals);
-            ImageIO.write(terrain, "png", new File(args[3]));
+            goals = loadGoalCoords(args[2]);
         } catch (Exception e){
             System.err.println("Failed to load arguments | Message: " + e.getMessage());
+            return;
         }
+
+        // Repeat until only goal is left
+        while(goals.size() != 1){
+            Coordinate goal = doAStarSearch(terrain, goals.pop(), goals.peek());
+            drawPath(terrain, goal);
+        }
+
+        
+        
+        // Attempt to write final image
+        try {
+            ImageIO.write(terrain, "png", new File(args[3]));
+        } catch (Exception e){
+            System.err.println("Unable to write to file \"" + args[3] + "\"| Message: " + e.getMessage());
+        }
+        
 
     }
 }
