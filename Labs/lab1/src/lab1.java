@@ -88,9 +88,14 @@ public class lab1 {
             return successors;
         }
 
-       public boolean isSame(Coordinate other){
-            return this.x == other.x && this.y == other.y;
-       }
+        @Override
+        public boolean equals(Object obj) {
+            if(obj instanceof Coordinate){
+                Coordinate other = (Coordinate) obj;
+                return this.x == other.x && this.y == other.y;
+            }
+            return false;
+        }
 
         @Override
         public String toString(){
@@ -184,6 +189,14 @@ public class lab1 {
     }
 
 
+    private static boolean containsBetterSuccessor(LinkedList<Coordinate> list, Coordinate successor){
+        if(list.contains(successor)){
+            Coordinate other = list.get(list.indexOf(successor));
+            return other.f < successor.f;
+        }
+
+        return false;   // list doesn't contain successor
+    }
 
     private static void drawPath(BufferedImage terrain, Coordinate goal){
         while(goal != null){
@@ -206,42 +219,28 @@ public class lab1 {
 
         // Get and set initial Coordinate
         source.totalDistance = 0;
-        frontier.push(source);
+        frontier.add(source);
 
         // Repeat until nothing is left in the frontier
         while( !frontier.isEmpty() ){
 
-            Coordinate curCoordinate = frontier.pop();
+            Coordinate curCoordinate = frontier.remove(0);  // pop list
 
             // Go through all current coordinate's successor
             for(Coordinate successor : curCoordinate.getSuccessors()){
 
                 // if find goal, return Coordinate with path info
-                if(successor.isSame(sink))
+                if(successor.equals(sink))
                     return successor;
 
                 successor.totalDistance += curCoordinate.totalDistance; // already has distance from parent
 
                 // successor.f = successor.totalDistance + getHeuristic(1);
-                boolean skipSuccessor = false;
-                // todo replace to vist / visit with sets and add hashfunt to comp
-                for(Coordinate c : frontier){
-                    if(c.isSame(successor) && c.f < successor.f){
-                        skipSuccessor = true;
-                        break;
-                    }
-                }
-                if(skipSuccessor)
-                    break;
 
-                for(Coordinate c : explored){
-                    if(c.isSame(successor) && c.f < successor.f){
-                        skipSuccessor = true;
-                        break;
-                    }
-                }
-                if(skipSuccessor)
-                    break;
+                // Check if better successor exists
+                if(containsBetterSuccessor(frontier, successor) || containsBetterSuccessor(explored, successor))
+                   continue;
+
                 frontier.add(successor);
             }
             explored.push(curCoordinate);
