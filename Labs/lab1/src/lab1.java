@@ -101,6 +101,13 @@ public class lab1 {
             return "x: " + this.x + " y: " + this.y;
         }
     }
+
+    private static class HeuristicComparator implements Comparator<Coordinate>{
+        @Override
+        public int compare(Coordinate o1, Coordinate o2) {
+            return Double.compare(o1.f, o2.f);
+        }
+    }
     
 
 
@@ -148,7 +155,7 @@ public class lab1 {
      */
     private static double[][] loadElevations(String elevationFile) throws IOException {
         try{
-            double[][] elevations = new double[500][395];     // elevations hardcoded as per assignment
+            double[][] elevations = new double[501][396];     // elevations hardcoded as per assignment
 
             // Add all elevation points to corresponding point in array
             int row = 0;
@@ -193,17 +200,13 @@ public class lab1 {
             Coordinate other = list.get(list.indexOf(successor));
             return other.f < successor.f;
         }
-//        for (Coordinate other : list){
-//            if(other.f < successor.f)
-//                return true;
-//        }
 
         return false;   // list doesn't contain successor
     }
 
     private static void drawPath(BufferedImage terrain, Coordinate goal){
         while(goal != null){
-            terrain.setRGB(goal.x, goal.y, Color.red.getRGB());
+            terrain.setRGB(goal.x, goal.y, Color.cyan.getRGB());
             goal = goal.parent;
         }
 
@@ -214,23 +217,23 @@ public class lab1 {
         String hex = "#" + buf.substring(buf.length()-6).toUpperCase();
         return switch (hex) {
             // open land
-            case "#F89412" -> 10;
+            case "#F89412" -> 5;
             // rough meadow
-            case "#FFC00" -> 15;
+            case "#FFC00" -> 10;
             // Easy forest movement
-            case "#FFFFFF" -> 15;
+            case "#FFFFFF" -> 10;
             // Slow run forest
-            case "#02D03C" -> 25;
+            case "#02D03C" -> 20;
             // Walk forest
-            case "#028828" -> 20;
+            case "#028828" -> 15;
             // Impassible vegetation
             case "#054918" -> Integer.MAX_VALUE;
             // Lake/Swamp/Marsh
-            case "#0000FF" -> 30;
+            case "#0000FF" -> Integer.MAX_VALUE;
             // Paved road
-            case "#473303" -> 0;
+            case "#473303" -> -5;
             // Footpath
-            case "#000000" -> 5;
+            case "#000000" -> 0;
             // Out of bounds
             case "#CD0066" -> Integer.MAX_VALUE;
 
@@ -243,13 +246,40 @@ public class lab1 {
     private static int getHeuristic(BufferedImage terrain, Coordinate current, Coordinate goal){
         // todo
         // check each pixel from start to goal and apply difficult factor base on terrain type
+        int heuristic = 0;
 
-        int m = (current.y - goal.y) / (current.x - goal.x);
-        int b = goal.y - m * goal.x;
+        // vertical line
+        if(current.x == goal.x){
+            int start = Math.min(current.y, goal.y);
+            int end = Math.max(current.y, goal.y);
+
+            for(int y = start; y < end; y++){
+                int terrainCost = getTerrainCost(terrain.getRGB(goal.x, y));
+                if(terrainCost == Integer.MAX_VALUE)
+                    return Integer.MAX_VALUE;
+                heuristic += 1 + terrainCost;
+            }
+            return heuristic;
+        }
 
         int start = Math.min(current.x, goal.x);
         int end = Math.max(current.x, goal.x);
-        int heuristic = 0;
+        // horizontal line
+        if(current.y == goal.y){
+
+            for(int x = start; x < end; x++){
+                int terrainCost = getTerrainCost(terrain.getRGB(x, goal.y));
+                if(terrainCost == Integer.MAX_VALUE)
+                    return Integer.MAX_VALUE;
+                heuristic += 1 + terrainCost;
+            }
+
+        }
+
+        // line
+        int m = (current.y - goal.y) / (current.x - goal.x);
+        int b = goal.y - m * goal.x;
+
         for(int x = start; x < end; x++){
             int y = m * x + b;
             int terrainCost = getTerrainCost(terrain.getRGB(x, y));
@@ -260,6 +290,18 @@ public class lab1 {
 
         return heuristic;
     }
+    private static void print(BufferedImage terrain, Set<Coordinate> frontier, LinkedList<Coordinate> explored,Coordinate source, Coordinate sink){
+        for(Coordinate c : frontier){
+            terrain.setRGB(c.x, c.y, Color.red.getRGB());
+        }
+
+        for(Coordinate c : explored){
+            terrain.setRGB(c.x, c.y, Color.yellow.getRGB());
+        }
+        terrain.setRGB(source.x, source.y, Color.cyan.getRGB());
+        terrain.setRGB(sink.x, sink.y, Color.pink.getRGB());
+    }
+
 
     private static Coordinate doAStarSearch(BufferedImage terrain, Coordinate source, Coordinate sink) throws Exception {
         // timer for metrics
@@ -267,7 +309,7 @@ public class lab1 {
         long end = start + 20 * 1000;
 
         // init queues
-        LinkedList<Coordinate> frontier = new LinkedList<>();
+        TreeSet<Coordinate> frontier = new TreeSet<>(new HeuristicComparator());
         LinkedList<Coordinate> explored = new LinkedList<>();
 
         // Get and set initial Coordinate
@@ -276,38 +318,56 @@ public class lab1 {
 
         // Repeat until nothing is left in the frontier
         while( !frontier.isEmpty() ){
-            if(System.currentTimeMillis() > end)
+            if(System.currentTimeMillis() > end){
+                print(terrain, frontier, explored,source,sink);
                 throw new Exception("Exceeded time limit");
+            }
 
 
-            Coordinate curCoordinate = frontier.remove(0);  // pop list
-
-            System.out.println(frontier.size());
+            Coordinate curCoordinate = frontier.pollFirst();
+//            terrain.setRGB(curCoordinate.x, curCoordinate.y, Color.yellow.getRGB());
+//            System.out.println(frontier.size());
             // Go through all current coordinate's successor
+            assert curCoordinate != null;
             for(Coordinate successor : curCoordinate.getSuccessors()){
+
+                // if find goal, return Coordinate with path info
+                if(successor.equals(sink)){
+                    print(terrain, frontier, explored,source,sink);
+                    return successor;
+                }
+
 
                 // inValid
                 if(getTerrainCost(terrain.getRGB(successor.x, successor.y)) == Integer.MAX_VALUE)
                     continue;
 
-                // if find goal, return Coordinate with path info
-                if(successor.equals(sink))
-                    return successor;
+
 
                 successor.totalDistance += curCoordinate.totalDistance; // already has distance from parent
 
 //                System.out.println("Calculating Heuristics for: " + successor);
-                successor.f = successor.totalDistance + getHeuristic(terrain, successor, sink);
+//                successor.f = successor.totalDistance + getHeuristic(terrain, successor, sink);
 
-//                successor.f = successor.totalDistance + successor.calcDistance(sink);
+                successor.f = successor.totalDistance + successor.calcDistance(sink);
                 // Check if better successor exists
-                if(containsBetterSuccessor(frontier, successor) || containsBetterSuccessor(explored, successor))
+                if(containsBetterSuccessor(explored, successor))
                    continue;
+                boolean cont = false;
+                for(Coordinate c : frontier){
+                    if(successor.equals(c) && c.f < successor.f){
+                        cont = true;
+                        break;
+                    }
+                }
 
-                frontier.add(successor);
+
+                if(!cont)
+                    frontier.add(successor);
             }
             explored.push(curCoordinate);
         }
+        print(terrain, frontier, explored,source,sink);
 
         // No path was found :(
         return null;
@@ -318,7 +378,7 @@ public class lab1 {
      *
      * @param args <terrain-image> <elevation-file> <path-file> <output-image-filename>
      */
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception {
         // Check for correct args
         if(args.length != 4){
             System.err.println("Incorrect Number of arguments");
@@ -334,13 +394,21 @@ public class lab1 {
             ELEVATIONS = loadElevations(args[1]);
             goals = loadGoalCoords(args[2]);
             // Repeat until only goal is left
+
+        } catch (Exception e){
+            System.err.println("Failed to load arguments | Message: " + e.getMessage());
+            return;
+        }
+
+        try {
             while(goals.size() != 1){
                 Coordinate goal = doAStarSearch(terrain, goals.pop(), goals.peek());
                 drawPath(terrain, goal);
             }
         } catch (Exception e){
-            System.err.println("Failed to load arguments | Message: " + e.getMessage());
-            return;
+            System.err.println(e);
+            ImageIO.write(terrain, "png", new File(args[3]));
+
         }
 
 
