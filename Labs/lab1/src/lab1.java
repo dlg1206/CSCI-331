@@ -61,7 +61,6 @@ public class lab1 {
             this.y = y;
             this.elevation = getElevationAt(x, y);
             this.parent = parent;
-            this.totalDistance = calcDistance(parent);
         }
 
         //
@@ -206,7 +205,7 @@ public class lab1 {
 
     private static void drawPath(BufferedImage terrain, Coordinate goal){
         while(goal != null){
-            terrain.setRGB(goal.x, goal.y, Color.cyan.getRGB());
+            terrain.setRGB(goal.x, goal.y, Color.red.getRGB());
             goal = goal.parent;
         }
 
@@ -217,23 +216,23 @@ public class lab1 {
         String hex = "#" + buf.substring(buf.length()-6).toUpperCase();
         return switch (hex) {
             // open land
-            case "#F89412" -> 0;
+            case "#F89412" -> 10;
             // rough meadow
-            case "#FFC000" -> 0;
+            case "#FFC000" -> 20;
             // Easy forest movement
-            case "#FFFFFF" -> 0;
+            case "#FFFFFF" -> 15;
             // Slow run forest
-            case "#02D03C" -> 0;
+            case "#02D03C" -> 20;
             // Walk forest
-            case "#028828" -> 0;
+            case "#028828" -> 25;
             // Impassible vegetation
-            case "#054918" -> 0;
+            case "#054918" -> 55;
             // Lake/Swamp/Marsh
-            case "#0000FF" -> 0;
+            case "#0000FF" -> 65;
             // Paved road
-            case "#473303" -> 0;
+            case "#473303" -> 5;
             // Footpath
-            case "#000000" -> 0;
+            case "#000000" -> 10;
             // Out of bounds
             case "#CD0066" -> Integer.MAX_VALUE;
 
@@ -243,53 +242,7 @@ public class lab1 {
 
     }
 
-    private static int getHeuristic(BufferedImage terrain, Coordinate current, Coordinate goal){
-        // todo
-        // check each pixel from start to goal and apply difficult factor base on terrain type
-        int heuristic = 0;
 
-        // vertical line
-        if(current.x == goal.x){
-            int start = Math.min(current.y, goal.y);
-            int end = Math.max(current.y, goal.y);
-
-            for(int y = start; y < end; y++){
-                int terrainCost = getTerrainCost(terrain.getRGB(goal.x, y));
-                if(terrainCost == Integer.MAX_VALUE)
-                    return Integer.MAX_VALUE;
-                heuristic += 1 + terrainCost;
-            }
-            return heuristic;
-        }
-
-        int start = Math.min(current.x, goal.x);
-        int end = Math.max(current.x, goal.x);
-        // horizontal line
-        if(current.y == goal.y){
-
-            for(int x = start; x < end; x++){
-                int terrainCost = getTerrainCost(terrain.getRGB(x, goal.y));
-                if(terrainCost == Integer.MAX_VALUE)
-                    return Integer.MAX_VALUE;
-                heuristic += 1 + terrainCost;
-            }
-
-        }
-
-        // line
-        int m = (current.y - goal.y) / (current.x - goal.x);
-        int b = goal.y - m * goal.x;
-
-        for(int x = start; x < end; x++){
-            int y = m * x + b;
-            int terrainCost = getTerrainCost(terrain.getRGB(x, y));
-            if(terrainCost == Integer.MAX_VALUE)
-                return Integer.MAX_VALUE;
-            heuristic += 1 + terrainCost;
-        }
-
-        return heuristic;
-    }
     private static void print(BufferedImage terrain, Set<Coordinate> frontier, LinkedList<Coordinate> explored,Coordinate source, Coordinate sink){
         for(Coordinate c : frontier){
             terrain.setRGB(c.x, c.y, Color.red.getRGB());
@@ -319,17 +272,16 @@ public class lab1 {
         // Repeat until nothing is left in the frontier
         while( !frontier.isEmpty() ){
             if(System.currentTimeMillis() > end){
-//                print(terrain, frontier, explored,source,sink);
+                print(terrain, frontier, explored,source,sink);
                 throw new Exception("Exceeded time limit");
             }
 
 
-            Coordinate curCoordinate = frontier.pollFirst();
-//            terrain.setRGB(curCoordinate.x, curCoordinate.y, Color.yellow.getRGB());
-//            System.out.println(frontier.size());
+            Coordinate parent = frontier.pollFirst();
+
             // Go through all current coordinate's successor
-            assert curCoordinate != null;
-            for(Coordinate successor : curCoordinate.getSuccessors()){
+            assert parent != null;
+            for(Coordinate successor : parent.getSuccessors()){
 
                 // if find goal, return Coordinate with path info
                 if(successor.equals(sink)){
@@ -337,14 +289,14 @@ public class lab1 {
                     return successor;
                 }
 
-
+                int terrainCost = getTerrainCost(terrain.getRGB(successor.x, successor.y));
                 // inValid
-                if(getTerrainCost(terrain.getRGB(successor.x, successor.y)) == Integer.MAX_VALUE)
+                if(terrainCost == Integer.MAX_VALUE)
                     continue;
 
 
 
-                successor.totalDistance += curCoordinate.totalDistance; // already has distance from parent
+                successor.totalDistance = terrainCost * successor.calcDistance(parent) + parent.totalDistance;
 
 //                System.out.println("Calculating Heuristics for: " + successor);
 //                successor.f = successor.totalDistance + getHeuristic(terrain, successor, sink);
@@ -365,9 +317,9 @@ public class lab1 {
                 if(!cont)
                     frontier.add(successor);
             }
-            explored.push(curCoordinate);
+            explored.push(parent);
         }
-        print(terrain, frontier, explored,source,sink);
+//        print(terrain, frontier, explored,source,sink);
 
         // No path was found :(
         return null;
