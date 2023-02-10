@@ -216,23 +216,23 @@ public class lab1 {
         String hex = "#" + buf.substring(buf.length()-6).toUpperCase();
         return switch (hex) {
             // open land
-            case "#F89412" -> 10;
+            case "#F89412" -> 3;
             // rough meadow
-            case "#FFC000" -> 20;
+            case "#FFC000" -> 4;
             // Easy forest movement
-            case "#FFFFFF" -> 15;
+            case "#FFFFFF" -> 5;
             // Slow run forest
-            case "#02D03C" -> 20;
+            case "#02D03C" -> 7;
             // Walk forest
-            case "#028828" -> 25;
+            case "#028828" -> 6;
             // Impassible vegetation
-            case "#054918" -> 55;
+            case "#054918" -> Integer.MAX_VALUE;
             // Lake/Swamp/Marsh
-            case "#0000FF" -> 65;
+            case "#0000FF" -> 8;
             // Paved road
-            case "#473303" -> 5;
+            case "#473303" -> 1;
             // Footpath
-            case "#000000" -> 10;
+            case "#000000" -> 2;
             // Out of bounds
             case "#CD0066" -> Integer.MAX_VALUE;
 
@@ -242,18 +242,6 @@ public class lab1 {
 
     }
 
-
-    private static void print(BufferedImage terrain, Set<Coordinate> frontier, LinkedList<Coordinate> explored,Coordinate source, Coordinate sink){
-        for(Coordinate c : frontier){
-            terrain.setRGB(c.x, c.y, Color.red.getRGB());
-        }
-
-        for(Coordinate c : explored){
-            terrain.setRGB(c.x, c.y, Color.yellow.getRGB());
-        }
-        terrain.setRGB(source.x, source.y, Color.BLACK.getRGB());
-        terrain.setRGB(sink.x, sink.y, Color.pink.getRGB());
-    }
 
 
     private static Coordinate doAStarSearch(BufferedImage terrain, Coordinate source, Coordinate sink) throws Exception {
@@ -272,7 +260,6 @@ public class lab1 {
         // Repeat until nothing is left in the frontier
         while( !frontier.isEmpty() ){
             if(System.currentTimeMillis() > end){
-                print(terrain, frontier, explored,source,sink);
                 throw new Exception("Exceeded time limit");
             }
 
@@ -330,7 +317,6 @@ public class lab1 {
             }
             explored.push(parent);
         }
-//        print(terrain, frontier, explored,source,sink);
 
         // No path was found :(
         return null;
@@ -364,14 +350,17 @@ public class lab1 {
         }
 
         try {
-            long start = System.currentTimeMillis();
+            LinkedList<Coordinate> goals2 = loadGoalCoords(args[2]);
             System.out.println("Total Control Points: " + goals.size());
+            long start = System.currentTimeMillis();
             while(goals.size() != 1){
                 Coordinate goal = doAStarSearch(terrain, goals.pop(), goals.peek());
                 drawPath(terrain, goal);
-
             }
             System.out.println("Total Time Elapsed: " + ((System.currentTimeMillis() - start) / (double) 1000));
+            for (Coordinate c : goals2){
+                terrain.setRGB(c.x, c.y, Color.blue.getRGB());
+            }
         } catch (Exception e){
             System.err.println(e);
             ImageIO.write(terrain, "png", new File(args[3]));
