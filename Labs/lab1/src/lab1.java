@@ -217,21 +217,21 @@ public class lab1 {
         String hex = "#" + buf.substring(buf.length()-6).toUpperCase();
         return switch (hex) {
             // open land
-            case "#F89412" -> 5;
+            case "#F89412" -> 0;
             // rough meadow
-            case "#FFC00" -> 10;
+            case "#FFC000" -> 0;
             // Easy forest movement
-            case "#FFFFFF" -> 10;
+            case "#FFFFFF" -> 0;
             // Slow run forest
-            case "#02D03C" -> 20;
+            case "#02D03C" -> 0;
             // Walk forest
-            case "#028828" -> 15;
+            case "#028828" -> 0;
             // Impassible vegetation
-            case "#054918" -> Integer.MAX_VALUE;
+            case "#054918" -> 0;
             // Lake/Swamp/Marsh
-            case "#0000FF" -> Integer.MAX_VALUE;
+            case "#0000FF" -> 0;
             // Paved road
-            case "#473303" -> -5;
+            case "#473303" -> 0;
             // Footpath
             case "#000000" -> 0;
             // Out of bounds
@@ -298,7 +298,7 @@ public class lab1 {
         for(Coordinate c : explored){
             terrain.setRGB(c.x, c.y, Color.yellow.getRGB());
         }
-        terrain.setRGB(source.x, source.y, Color.cyan.getRGB());
+        terrain.setRGB(source.x, source.y, Color.BLACK.getRGB());
         terrain.setRGB(sink.x, sink.y, Color.pink.getRGB());
     }
 
@@ -319,7 +319,7 @@ public class lab1 {
         // Repeat until nothing is left in the frontier
         while( !frontier.isEmpty() ){
             if(System.currentTimeMillis() > end){
-                print(terrain, frontier, explored,source,sink);
+//                print(terrain, frontier, explored,source,sink);
                 throw new Exception("Exceeded time limit");
             }
 
@@ -333,7 +333,7 @@ public class lab1 {
 
                 // if find goal, return Coordinate with path info
                 if(successor.equals(sink)){
-                    print(terrain, frontier, explored,source,sink);
+//                    print(terrain, frontier, explored,source,sink);
                     return successor;
                 }
 
