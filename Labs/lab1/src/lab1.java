@@ -286,7 +286,7 @@ public class lab1 {
                 // if find goal, return Coordinate with path info
                 if(successor.equals(sink)){
 //                    print(terrain, frontier, explored,source,sink);
-                    System.out.println(source + " -> " + sink + " | Time Elapsed: " + ((System.currentTimeMillis() - start) / (double) 1000) + " seconds");
+                    System.out.println("\t" + source + " -> " + sink + " | Time Elapsed: " + ((System.currentTimeMillis() - start) / (double) 1000) + " seconds");
                     return successor;
                 }
 
@@ -297,25 +297,35 @@ public class lab1 {
 
 
 
-                successor.totalDistance = terrainCost * successor.calcDistance(parent) + parent.totalDistance;
+                successor.totalDistance = terrainCost + successor.calcDistance(parent) + parent.totalDistance;
 
 //                System.out.println("Calculating Heuristics for: " + successor);
 //                successor.f = successor.totalDistance + getHeuristic(terrain, successor, sink);
 
                 successor.f = successor.totalDistance + successor.calcDistance(sink);
                 // Check if better successor exists
-                if(containsBetterSuccessor(explored, successor))
-                   continue;
+//                if(containsBetterSuccessor(explored, successor))
+//                   continue;
                 boolean cont = false;
+
                 for(Coordinate c : frontier){
                     if(successor.equals(c) && c.f < successor.f){
                         cont = true;
                         break;
                     }
                 }
+                if(cont)
+                    continue;
+                for(Coordinate c : explored){
+                    if(successor.equals(c) && c.f < successor.f){
+                        cont = true;
+                        break;
+                    }
+                }
+                if (cont)
+                    continue;
 
 
-                if(!cont)
                     frontier.add(successor);
             }
             explored.push(parent);
