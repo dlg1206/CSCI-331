@@ -97,7 +97,7 @@ public class lab1 {
 
         @Override
         public String toString(){
-            return "x: " + this.x + " y: " + this.y;
+            return "(" + this.x + ", " + this.y + ")";
         }
     }
 
@@ -286,6 +286,7 @@ public class lab1 {
                 // if find goal, return Coordinate with path info
                 if(successor.equals(sink)){
 //                    print(terrain, frontier, explored,source,sink);
+                    System.out.println(source + " -> " + sink + " | Time Elapsed: " + ((System.currentTimeMillis() - start) / (double) 1000) + " seconds");
                     return successor;
                 }
 
@@ -353,10 +354,14 @@ public class lab1 {
         }
 
         try {
+            long start = System.currentTimeMillis();
+            System.out.println("Total Control Points: " + goals.size());
             while(goals.size() != 1){
                 Coordinate goal = doAStarSearch(terrain, goals.pop(), goals.peek());
                 drawPath(terrain, goal);
+
             }
+            System.out.println("Total Time Elapsed: " + ((System.currentTimeMillis() - start) / (double) 1000));
         } catch (Exception e){
             System.err.println(e);
             ImageIO.write(terrain, "png", new File(args[3]));
