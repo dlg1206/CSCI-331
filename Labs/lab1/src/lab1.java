@@ -384,6 +384,7 @@ public class lab1 {
 
         } catch (Exception e){
             System.err.println(e.getMessage());
+            e.printStackTrace();
         }
 
         // Attempt to write final image

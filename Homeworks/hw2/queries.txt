@@ -1,0 +1,18 @@
+Derek Garcia
+CSCI 331 - HW 2
+
+1.
+Query: setof(X,grandchildOf(X,elizabeth),List), write(List).
+Result: List = [beatrice, eugenie, harry, james, louise, peter, william, zara].
+
+2.
+Query: setof(X,brotherInLawOf(X,diana),List), write(List).
+Result: List = [andrew, edward].
+
+3.
+Query: setof(X,firstCousinOf(X,zara),List), write(List).
+Result: List = [beatrice, eugenie, harry, james, louise, william].
+
+4.
+Query: setof(X,ancestorOf(X,eugenie),List), write(List).
+Result: List = [andrew, elizabeth, george, mum, philip, sarah].
