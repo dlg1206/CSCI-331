@@ -50,6 +50,18 @@ public class Lab2 {
         }
     }
 
+    private static boolean plResolution(KnowledgeBase kb, String a){
+        return false;
+    }
+
+    private static String unify(String x, String y, String o){
+        return "";
+    }
+
+    private static String unifyVar(String var, String x, String o){
+        return "";
+    }
+
 
     public static void main(String[] args) {
         // Check for correct args
@@ -69,7 +81,7 @@ public class Lab2 {
             return;
         }
 
-        System.out.println("Success");
+        plResolution(kb, "");
 
     }
 }
