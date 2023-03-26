@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.function.Predicate;
 
 /**
  * file: lab2.java
@@ -13,27 +12,96 @@ public class Lab2 {
 
     private static class KnowledgeBase{
 
+        private class Token{
+            public enum tokenType{
+                ID,
+                NEGATION,
+                OPEN_PARENTHESIS,
+                CLOSED_PARENTHESIS,
+                COMMA,
+                OR
+            }
 
-        private HashSet<String> Predicates = new HashSet<>();
-        private HashSet<String> Variables = new HashSet<>();
-        private HashSet<String> Constants = new HashSet<>();
-        private HashSet<String> Functions = new HashSet<>();
-        private ArrayList<String> Clauses = new ArrayList<>();
+            private final String value;
 
-        public KnowledgeBase(String filepath) throws IOException {
+            public Token(tokenType type, String value){
+                this.value = value;
+            }
+
+            @Override
+            public String toString() {
+                return this.value;
+            }
+        }
+
+        private class Clause{
+            private ArrayList<Token> tokens = new ArrayList<>();
+
+            public Clause(){
+            }
+
+            public void addToken(Token token){
+                this.tokens.add(token);
+            }
+
+            @Override
+            public String toString() {
+                String clause = "";
+                for(Token token : this.tokens){
+                    clause += token;
+                }
+                return clause;
+            }
+        }
+
+
+        private HashSet<String> predicates = new HashSet<>();
+        private HashSet<String> variables = new HashSet<>();
+        private HashSet<String> constants = new HashSet<>();
+        private HashSet<String> functions = new HashSet<>();
+        private ArrayList<Clause> clauses = new ArrayList<>();
+
+        public KnowledgeBase(String filepath) throws Exception {
             BufferedReader br = new BufferedReader(new FileReader(filepath));
 
-            updateKnowledgeBase("Predicates:", this.Predicates, br.readLine().split(" "));
-            updateKnowledgeBase("Variables:", this.Variables, br.readLine().split(" "));
-            updateKnowledgeBase("Constants:", this.Constants, br.readLine().split(" "));
-            updateKnowledgeBase("Functions:", this.Functions, br.readLine().split(" "));
+            updateKnowledgeBase("Predicates:", this.predicates, br.readLine().split(" "));
+            updateKnowledgeBase("Variables:", this.variables, br.readLine().split(" "));
+            updateKnowledgeBase("Constants:", this.constants, br.readLine().split(" "));
+            updateKnowledgeBase("Functions:", this.functions, br.readLine().split(" "));
 
             br.readLine();
 
-            String clause = br.readLine();
-            while(clause != null){
-                this.Clauses.add(clause);
-                clause = br.readLine();
+            String clauseString = br.readLine();
+            while(clauseString != null){
+                clauseString = clauseString.strip();
+                String value = "";
+                Clause clause = new Clause();
+                for(char c : clauseString.toCharArray()){
+
+                    // test if alphanumeric
+                    if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
+                        value += c;
+                        continue;
+                    } else {
+                        // end of id
+                        clause.addToken(new Token(Token.tokenType.ID, value));
+                        value = "";
+                    }
+
+                    // test if single char
+                    switch (c) {
+                        case '!' -> clause.addToken(new Token(Token.tokenType.NEGATION, "!"));
+                        case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
+                        case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
+                        case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
+                        case ' ' -> clause.addToken(new Token(Token.tokenType.OR, "^"));
+                        default -> throw new Exception("Unrecognized character: " + c);
+                    }
+                }
+                this.clauses.add(clause);
+                System.out.println(clause);
+
+                clauseString = br.readLine();
             }
             br.close();
         }
@@ -51,6 +119,7 @@ public class Lab2 {
     }
 
     private static boolean plResolution(KnowledgeBase kb, String a){
+
         return false;
     }
 
