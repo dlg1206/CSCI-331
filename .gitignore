@@ -1,4 +1,7 @@
+# IDE Files
 /.idea/
 *.iml
 out
+
+# Lab1
 out.png
