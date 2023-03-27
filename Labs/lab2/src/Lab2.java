@@ -34,6 +34,8 @@ public class Lab2 {
             this.value = value;
         }
 
+
+
         public tokenType getType() {
             return this.type;
         }
@@ -88,6 +90,7 @@ public class Lab2 {
         return "";
     }
 
+
     private static ArrayList<Clause> getKnowledgeBase(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
@@ -112,6 +115,7 @@ public class Lab2 {
                 if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
                     value.append(c);
                 } else {
+
                     // end of id
                     Token.tokenType token = null;
                     if(predicates.contains(value.toString())){
@@ -134,12 +138,13 @@ public class Lab2 {
                         case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
                         case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
                         case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
-                        case '^', ' ' -> clause.addToken(new Token(Token.tokenType.AND, "^"));
+                        case '^', ' ' -> clause.addToken(new Token(Token.tokenType.AND, " "));
                         case 'v' -> clause.addToken(new Token(Token.tokenType.OR, "v"));
                         default -> throw new Exception("Parsing Error, unknown string: " + value);
                     }
                 }
             }
+
             clauses.add(clause);
             clauseString = br.readLine();
         }
