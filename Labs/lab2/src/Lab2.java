@@ -10,134 +10,72 @@ import java.util.HashSet;
  **/
 public class Lab2 {
 
-    private static class KnowledgeBase{
 
-        private class Token{
-            public enum tokenType{
-                ID,
-                NEGATION,
-                OPEN_PARENTHESIS,
-                CLOSED_PARENTHESIS,
-                COMMA,
-                OR
-            }
 
-            private final String value;
-            private final tokenType type;
-
-            public Token(tokenType type, String value){
-                this.type = type;
-                this.value = value;
-            }
-
-            public tokenType getType() {
-                return this.type;
-            }
-
-            @Override
-            public String toString() {
-                return this.value;
-            }
+    private static class Token {
+        public enum tokenType{
+            PREDICATE,
+            VARIABLE,
+            CONSTANT,
+            FUNCTION,
+            NEGATION,
+            OPEN_PARENTHESIS,
+            CLOSED_PARENTHESIS,
+            COMMA,
+            OR,
+            AND
         }
 
-        private class Clause{
-            private final ArrayList<Token> tokens = new ArrayList<>();
+        private final String value;
+        private final tokenType type;
 
-
-            public Clause(){
-            }
-
-            public void addToken(Token token){
-                this.tokens.add(token);
-            }
-
-            @Override
-            public String toString() {
-                String clause = "";
-                for(Token token : this.tokens){
-                    clause += token;
-                }
-                return clause;
-            }
+        public Token(tokenType type, String value){
+            this.type = type;
+            this.value = value;
         }
 
-
-        private HashSet<String> predicates = new HashSet<>();
-        private HashSet<String> variables = new HashSet<>();
-        private HashSet<String> constants = new HashSet<>();
-        private HashSet<String> functions = new HashSet<>();
-        private ArrayList<Clause> clauses = new ArrayList<>();
-
-        public KnowledgeBase(String filepath) throws Exception {
-            BufferedReader br = new BufferedReader(new FileReader(filepath));
-
-            updateKnowledgeBase("Predicates:", this.predicates, br.readLine().split(" "));
-            updateKnowledgeBase("Variables:", this.variables, br.readLine().split(" "));
-            updateKnowledgeBase("Constants:", this.constants, br.readLine().split(" "));
-            updateKnowledgeBase("Functions:", this.functions, br.readLine().split(" "));
-
-            br.readLine();
-
-            String clauseString = br.readLine();
-            while(clauseString != null){
-                clauseString = clauseString.strip();
-                String value = "";
-                Clause clause = new Clause();
-                for(char c : clauseString.toCharArray()){
-
-                    // test if alphanumeric
-                    if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
-                        value += c;
-                        continue;
-                    } else {
-                        // end of id
-                        clause.addToken(new Token(Token.tokenType.ID, value));
-                        value = "";
-                    }
-
-                    // test if single char
-                    switch (c) {
-                        case '!' -> clause.addToken(new Token(Token.tokenType.NEGATION, "!"));
-                        case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
-                        case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
-                        case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
-                        case ' ' -> clause.addToken(new Token(Token.tokenType.OR, "^"));
-                        default -> throw new Exception("Unrecognized character: " + c);
-                    }
-                }
-                this.clauses.add(clause);
-                System.out.println(clause);
-
-                clauseString = br.readLine();
-            }
-            br.close();
+        public tokenType getType() {
+            return this.type;
         }
 
-        private void updateKnowledgeBase(String fieldID, HashSet<String> field, String[] fileContents){
-
-            for(String val : fileContents){
-                // skip id line
-                if(val.equals(fieldID))
-                    continue;
-
-                field.add(val);
-            }
-        }
-
-        public boolean isPredicate(Token token){
-            return this.predicates.contains(token.toString());
-        }
-
-        public boolean isVariable(Token token){
-            return this.variables.contains(token.toString());
-        }
-
-        public boolean isFunction(Token token){
-            return this.functions.contains(token.toString());
+        @Override
+        public String toString() {
+            return this.value;
         }
     }
 
-    private static boolean plResolution(KnowledgeBase kb, String a){
+    private static class Clause {
+        private ArrayList<Token> tokens = new ArrayList<>();
+
+
+        public Clause(){
+        }
+
+        public void addToken(Token token){
+            this.tokens.add(token);
+        }
+
+        public void negate(){
+
+        }
+
+        @Override
+        public String toString() {
+            String clause = "";
+            for(Token token : this.tokens){
+                clause += token;
+            }
+            return clause;
+        }
+    }
+
+
+    private static boolean plResolution(ArrayList<Clause> kbClauses, Clause a){
+
+        if(a != null){
+            a.negate();
+            kbClauses.add(a);
+        }
 
         return false;
     }
@@ -150,6 +88,77 @@ public class Lab2 {
         return "";
     }
 
+    private static ArrayList<Clause> getKnowledgeBase(String filepath) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(filepath));
+
+        // Read in from file
+        HashSet<String> predicates = toHashSet("Predicates:", br.readLine().split(" "));
+        HashSet<String> variables = toHashSet("Variables:", br.readLine().split(" "));
+        HashSet<String> constants = toHashSet("Constants:", br.readLine().split(" "));
+        HashSet<String> functions = toHashSet("Functions:", br.readLine().split(" "));
+
+        ArrayList<Clause> clauses = new ArrayList<>();
+
+        br.readLine();
+        String clauseString = br.readLine();
+
+        while(clauseString != null){
+            clauseString = clauseString.strip();
+            StringBuilder value = new StringBuilder();
+            Clause clause = new Clause();
+            for(char c : clauseString.toCharArray()){
+
+                // test if alphanumeric
+                if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
+                    value.append(c);
+                } else {
+                    // end of id
+                    Token.tokenType token = null;
+                    if(predicates.contains(value.toString())){
+                        token = Token.tokenType.PREDICATE;
+                    } else if (variables.contains(value.toString())){
+                        token = Token.tokenType.VARIABLE;
+                    } else if (constants.contains(value.toString())){
+                        token = Token.tokenType.CONSTANT;
+                    } else if (functions.contains(value.toString())){
+                        token = Token.tokenType.FUNCTION;
+                    }
+
+                    if(token != null){
+                        clause.addToken(new Token(token, value.toString()));
+                        value = new StringBuilder();
+                    }
+                    // test if single char
+                    switch (c) {
+                        case '!' -> clause.addToken(new Token(Token.tokenType.NEGATION, "!"));
+                        case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
+                        case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
+                        case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
+                        case '^', ' ' -> clause.addToken(new Token(Token.tokenType.AND, "^"));
+                        case 'v' -> clause.addToken(new Token(Token.tokenType.OR, "v"));
+                        default -> throw new Exception("Parsing Error, unknown string: " + value);
+                    }
+                }
+            }
+            clauses.add(clause);
+            clauseString = br.readLine();
+        }
+        br.close();
+        return clauses;
+    }
+
+    private static HashSet<String> toHashSet(String fieldID, String[] fileContents){
+        HashSet<String> field = new HashSet<>();
+        for(String val : fileContents){
+            // skip id line
+            if(val.equals(fieldID))
+                continue;
+
+            field.add(val);
+        }
+        return field;
+    }
+
 
     public static void main(String[] args) {
         // Check for correct args
@@ -160,16 +169,19 @@ public class Lab2 {
         }
 
         // Attempt to make load Knowledge Base from file
-        KnowledgeBase kb;
+        ArrayList<Clause> clauses;
         try{
-            kb = new KnowledgeBase(args[0]);
+            clauses = getKnowledgeBase(args[0]);
         } catch (Exception e){
             System.err.println("Failed to load Knowledge Base \"" + args[0] + "\"");
             System.err.println("Reason: " + e.getLocalizedMessage());
             return;
         }
 
-        plResolution(kb, "");
+        for (Clause c : clauses)
+            System.out.println(c);
+
+//        plResolution(clauses, null);
 
     }
 }
