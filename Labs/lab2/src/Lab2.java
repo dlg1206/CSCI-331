@@ -23,9 +23,15 @@ public class Lab2 {
             }
 
             private final String value;
+            private final tokenType type;
 
             public Token(tokenType type, String value){
+                this.type = type;
                 this.value = value;
+            }
+
+            public tokenType getType() {
+                return this.type;
             }
 
             @Override
@@ -35,7 +41,8 @@ public class Lab2 {
         }
 
         private class Clause{
-            private ArrayList<Token> tokens = new ArrayList<>();
+            private final ArrayList<Token> tokens = new ArrayList<>();
+
 
             public Clause(){
             }
@@ -115,6 +122,18 @@ public class Lab2 {
 
                 field.add(val);
             }
+        }
+
+        public boolean isPredicate(Token token){
+            return this.predicates.contains(token.toString());
+        }
+
+        public boolean isVariable(Token token){
+            return this.variables.contains(token.toString());
+        }
+
+        public boolean isFunction(Token token){
+            return this.functions.contains(token.toString());
         }
     }
 
