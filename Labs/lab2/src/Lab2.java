@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * file: lab2.java
@@ -91,16 +93,16 @@ public class Lab2 {
     }
 
 
-    private static ArrayList<Clause> getKnowledgeBase(String filepath) throws Exception {
+    private static List<Clause> getKnowledgeBase(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         // Read in from file
-        HashSet<String> predicates = toHashSet("Predicates:", br.readLine().split(" "));
-        HashSet<String> variables = toHashSet("Variables:", br.readLine().split(" "));
-        HashSet<String> constants = toHashSet("Constants:", br.readLine().split(" "));
-        HashSet<String> functions = toHashSet("Functions:", br.readLine().split(" "));
+        HashSet<String> predicates = toHashSet(br.readLine().split(" "));
+        HashSet<String> variables  = toHashSet(br.readLine().split(" "));
+        HashSet<String> constants  = toHashSet(br.readLine().split(" "));
+        HashSet<String> functions  = toHashSet(br.readLine().split(" "));
 
-        ArrayList<Clause> clauses = new ArrayList<>();
+        List<Clause> clauses = new ArrayList<>();
 
         // trash "Clauses: " header and start with first line
         br.readLine();
@@ -153,23 +155,19 @@ public class Lab2 {
                 }
             }
 
+            // add clause and get next string
             clauses.add(clause);
             clauseString = br.readLine();
         }
+        // close br and return KB
         br.close();
         return clauses;
     }
 
-    private static HashSet<String> toHashSet(String fieldID, String[] fileContents){
-        HashSet<String> field = new HashSet<>();
-        for(String val : fileContents){
-            // skip id line
-            if(val.equals(fieldID))
-                continue;
-
-            field.add(val);
-        }
-        return field;
+    private static HashSet<String> toHashSet(String[] array){
+        List<String> tmp = new ArrayList<>(Arrays.asList(array));
+        tmp.remove(0);  // remove line header
+        return new HashSet<>(tmp);
     }
 
 
@@ -182,12 +180,12 @@ public class Lab2 {
         }
 
         // Attempt to make load Knowledge Base from file
-        ArrayList<Clause> clauses;
+        List<Clause> clauses;
         try{
             clauses = getKnowledgeBase(args[0]);
         } catch (Exception e){
             System.err.println("Failed to load Knowledge Base \"" + args[0] + "\"");
-            System.err.println("Reason: " + e.getLocalizedMessage());
+            System.err.println("Error: " + e);
             return;
         }
 
