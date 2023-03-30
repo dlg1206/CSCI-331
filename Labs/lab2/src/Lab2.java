@@ -102,21 +102,25 @@ public class Lab2 {
 
         ArrayList<Clause> clauses = new ArrayList<>();
 
+        // trash "Clauses: " header and start with first line
         br.readLine();
         String clauseString = br.readLine();
 
+        // Foreach Clause in KB
         while(clauseString != null){
-            clauseString = clauseString.strip();
+
+            // init vars
             StringBuilder value = new StringBuilder();
             Clause clause = new Clause();
+
+            // Parse each character
             for(char c : clauseString.toCharArray()){
 
                 // test if alphanumeric
                 if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
                     value.append(c);
                 } else {
-
-                    // end of id
+                    // else, end of id
                     Token.tokenType token = null;
                     if(predicates.contains(value.toString())){
                         token = Token.tokenType.PREDICATE;
@@ -128,19 +132,23 @@ public class Lab2 {
                         token = Token.tokenType.FUNCTION;
                     }
 
+                    // if the tokenType not null, create new token and reset character string
                     if(token != null){
                         clause.addToken(new Token(token, value.toString()));
                         value = new StringBuilder();
                     }
-                    // test if single char
+                    // test if single char token
                     switch (c) {
                         case '!' -> clause.addToken(new Token(Token.tokenType.NEGATION, "!"));
                         case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
                         case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
                         case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
-                        case '^', ' ' -> clause.addToken(new Token(Token.tokenType.AND, " "));
-                        case 'v' -> clause.addToken(new Token(Token.tokenType.OR, "v"));
-                        default -> throw new Exception("Parsing Error, unknown string: " + value);
+                        case ' ' -> clause.addToken(new Token(Token.tokenType.AND, " "));
+                        // Unknown value
+                        default -> {
+                            br.close();
+                            throw new Exception("Parsing Error, unknown string: " + value);
+                        }
                     }
                 }
             }
