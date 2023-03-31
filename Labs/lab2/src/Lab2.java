@@ -53,19 +53,33 @@ public class Lab2 {
     }
 
     private static class Clause {
-        private List<Token> tokens;
+        private Stack<Token> tokens;
 
 
-        public Clause(List<Token> tokens){
+        public Clause(Stack<Token> tokens){
             // remove extraneous or
             if(tokens.get(tokens.size() - 1).type == Token.tokenType.OR)
                 tokens.remove(tokens.size() - 1);
 
-//            tokens.add(0, new Token(Token.tokenType.OPEN_PARENTHESIS));
             this.tokens = tokens;
         }
 
         public void negate(){
+//            List<Token> negTokens = new ArrayList<>();
+//
+//            while(this.tokens != null){
+//                Token curToken = this.tokens.remove(0);
+//
+//                if(PREDICATES.contains(curToken.value)){
+//
+//                    if(negTokens.isEmpty() || negTokens.get(negTokens.size())){
+//                        negTokens.add(new Token(Token.tokenType.NEGATION));
+//                        negTokens.add(curToken);
+//                    } else {
+//
+//                    }
+//                }
+//            }
 
         }
 
@@ -119,7 +133,7 @@ public class Lab2 {
 
             // init vars
             StringBuilder value = new StringBuilder();
-            List<Token> tokens = new ArrayList<>();
+            Stack<Token> tokens = new Stack<>();
 
             // Parse each character
             for(char c : clauseString.toCharArray()){
@@ -188,7 +202,7 @@ public class Lab2 {
 
         for (Clause c : clauses){
             System.out.println(c);
-            c.negate();
+//            c.negate();
 //            System.out.println(c);
         }
 
