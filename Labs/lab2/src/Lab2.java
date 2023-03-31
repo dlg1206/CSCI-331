@@ -9,15 +9,12 @@ import java.util.*;
  **/
 public class Lab2 {
 
-    private static Set<String> PREDICATES;
-    private static Set<String> VARIABLES;
-    private static Set<String> CONSTANTS;
-    private static Set<String> FUNCTIONS;
-
-
     private static class Token {
         public enum tokenType{
-            ID,
+            PREDICATE,
+            VARIABLE,
+            CONSTANT,
+            FUNCTION,
             NEGATION,
             OPEN_PARENTHESIS,
             CLOSED_PARENTHESIS,
@@ -70,21 +67,20 @@ public class Lab2 {
             while(!this.tokens.isEmpty()){
                 Token curToken = this.tokens.remove(0);
 
-                if(PREDICATES.contains(curToken.value)){
-                    // push negation if stack empty or top is not a double negation
-                    if(negation.isEmpty() || negation.peek().type != Token.tokenType.NEGATION){
-                        negation.push(new Token(Token.tokenType.NEGATION));
-                    } else {
-                        negation.pop();
-                    }
-                }
-
                 switch (curToken.type){
+                    case PREDICATE -> {
+                        // push negation if stack empty or top is not a double negation
+                        if(negation.isEmpty() || negation.peek().type != Token.tokenType.NEGATION){
+                            negation.push(new Token(Token.tokenType.NEGATION));
+                        } else {
+                            negation.pop();
+                        }
+                        negation.add(curToken);
+                    }
                     case AND -> negation.push(new Token(Token.tokenType.OR));
                     case OR -> negation.push(new Token(Token.tokenType.AND));
                     default -> negation.add(curToken);
                 }
-
 
             }
             this.tokens = negation;
@@ -124,11 +120,12 @@ public class Lab2 {
     private static List<Clause> getKnowledgeBase(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
+
         // Read in from file
-        PREDICATES = toHashSet(br.readLine().split(" "));
-        VARIABLES  = toHashSet(br.readLine().split(" "));
-        CONSTANTS  = toHashSet(br.readLine().split(" "));
-        FUNCTIONS  = toHashSet(br.readLine().split(" "));
+        HashSet<String> predicates = toHashSet(br.readLine().split(" "));
+        HashSet<String> variables = toHashSet( br.readLine().split(" "));
+        HashSet<String> constants = toHashSet( br.readLine().split(" "));
+        HashSet<String> functions = toHashSet(br.readLine().split(" "));
 
         List<Clause> clauses = new ArrayList<>();
 
@@ -151,9 +148,19 @@ public class Lab2 {
                     value.append(c);
                 } else {
 
-                    // End of ID. Add new ID if one is present
-                    if(!value.isEmpty()){
-                        tokens.add(new Token(Token.tokenType.ID, value.toString()));
+                    Token.tokenType token = null;
+                    if(predicates.contains(value.toString())){
+                        token = Token.tokenType.PREDICATE;
+                    } else if (variables.contains(value.toString())){
+                        token = Token.tokenType.VARIABLE;
+                    } else if (constants.contains(value.toString())){
+                        token = Token.tokenType.CONSTANT;
+                    } else if (functions.contains(value.toString())){
+                        token = Token.tokenType.FUNCTION;
+                    }
+
+                    if(token != null){
+                        tokens.add(new Token(token, value.toString()));
                         value = new StringBuilder();
                     }
 
