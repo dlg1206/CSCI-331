@@ -9,6 +9,11 @@ import java.util.*;
  **/
 public class Lab2 {
 
+    private static HashSet<String> PREDICATES;
+    private static HashSet<String> VARIABLES;
+    private static HashSet<String> CONSTANTS;
+    private static HashSet<String> FUNCTIONS;
+
     private static class Token {
         public enum tokenType{
             PREDICATE,
@@ -47,31 +52,15 @@ public class Lab2 {
         public String toString() {
             return this.value;
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Token token = (Token) o;
-
-            if (type != token.type) return false;
-            return Objects.equals(value, token.value);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = type != null ? type.hashCode() : 0;
-            result = 31 * result + (value != null ? value.hashCode() : 0);
-            return result;
-        }
+        
     }
 
-    private static class Clause {
+    private static class Literal {
         private Stack<Token> tokens;
+        private boolean isNegated = false;
 
 
-        public Clause(Stack<Token> tokens){
+        public Literal(Stack<Token> tokens){
             // remove extraneous or
             if(tokens.get(tokens.size() - 1).type == Token.tokenType.OR)
                 tokens.remove(tokens.size() - 1);
@@ -81,56 +70,23 @@ public class Lab2 {
 //            tokens.push(new Token(Token.tokenType.CLOSED_PARENTHESIS));
 
             this.tokens = tokens;
-        }
 
-        public void negate(){
-            Stack<Token> negation = new Stack<>();
-
-            while(!this.tokens.isEmpty()){
-                Token curToken = this.tokens.remove(0);
-
-                switch (curToken.type){
-                    case PREDICATE -> {
-                        // push negation if stack empty or top is not a double negation
-                        if(negation.isEmpty() || negation.peek().type != Token.tokenType.NEGATION){
-                            negation.push(new Token(Token.tokenType.NEGATION));
-                        } else {
-                            negation.pop();
-                        }
-                        negation.add(curToken);
-                    }
-                    case AND -> negation.push(new Token(Token.tokenType.OR));
-                    case OR -> negation.push(new Token(Token.tokenType.AND));
-                    default -> negation.add(curToken);
-                }
-
-            }
-            this.tokens = negation;
-        }
-
-
-        @Override
-        public String toString() {
-            StringBuilder clause = new StringBuilder();
-            for(Token token : this.tokens)
-                clause.append(token);
-
-            return clause.toString();
         }
     }
 
 
-    private static boolean plResolution(List<Clause> kbClauses){
+
+    private static boolean plResolution(List<Literal> kbClauses){
 
 
-        List<Clause> clauses = new ArrayList<>(kbClauses);
+        List<Literal> clauses = new ArrayList<>(kbClauses);
 
-        List<Clause> newClauses = new ArrayList<>();
+        List<Literal> newClauses = new ArrayList<>();
 
         for(;;){
-            Clause ci = clauses.remove(0);
-            for(Clause cj : clauses){
-                List<Clause> resolvents = plResolve(ci, cj);
+            Literal ci = clauses.remove(0);
+            for(Literal cj : clauses){
+                List<Literal> resolvents = plResolve(ci, cj);
                 if(resolvents.isEmpty())
                     return true;
                 newClauses.addAll(resolvents);
@@ -142,30 +98,18 @@ public class Lab2 {
         }
     }
 
-    private static List<Clause> plResolve(Clause ci, Clause cj){
+    private static List<Literal> plResolve(Literal ci, Literal cj){
 
-        List<Clause> resolvents =  new ArrayList<>();
-        for(Token token : ci.tokens){
-            if(token.type == Token.tokenType.PREDICATE){
-                // 1. check if other has same predicate
-                if(cj.tokens.contains(token)){
-                    // 2. check if negated
-                    try{
-                        for(int i = 0; i < cj.tokens.size(); i++){
+        List<Literal> resolvents =  new ArrayList<>();
 
-                            if(token == cj.tokens.get(i) && cj.tokens.get(i - 1).type == Token.tokenType.NEGATION){
-
-                            }
-
-
-                        }
-                    } catch (Exception e){
-
-                    }
-                }
-            }
-
+        if(ci.toString().contains(cj.toString())){
+            int a =0;
         }
+
+        if(cj.toString().contains(ci.toString())){
+            int a =0;
+        }
+
         return null;
 
     }
@@ -179,30 +123,30 @@ public class Lab2 {
     }
 
 
-    private static List<Clause> getKnowledgeBase(String filepath) throws Exception {
+    private static List<Literal> getKnowledgeBase(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         // Read in from file
-        HashSet<String> predicates = toHashSet(br.readLine().split(" "));
-        HashSet<String> variables = toHashSet( br.readLine().split(" "));
-        HashSet<String> constants = toHashSet( br.readLine().split(" "));
-        HashSet<String> functions = toHashSet(br.readLine().split(" "));
+        PREDICATES = toHashSet(br.readLine().split(" "));
+        VARIABLES = toHashSet(br.readLine().split(" "));
+        CONSTANTS = toHashSet(br.readLine().split(" "));
+        FUNCTIONS = toHashSet(br.readLine().split(" "));
 
-        List<Clause> clauses = new ArrayList<>();
+        List<Literal> clause = new ArrayList<>();
 
         // trash "Clauses: " header and start with first line
         br.readLine();
-        String clauseString = br.readLine();
+        String literalString = br.readLine();
 
         // Foreach Clause in KB
-        while(clauseString != null){
+        while(literalString != null){
 
             // init vars
             StringBuilder value = new StringBuilder();
             Stack<Token> tokens = new Stack<>();
 
             // Parse each character
-            for(char c : clauseString.toCharArray()){
+            for(char c : literalString.toCharArray()){
 
                 // test if alphanumeric
                 if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
@@ -211,13 +155,13 @@ public class Lab2 {
                 }
 
                 Token.tokenType token = null;
-                if(predicates.contains(value.toString())){
+                if(PREDICATES.contains(value.toString())){
                     token = Token.tokenType.PREDICATE;
-                } else if (variables.contains(value.toString())){
+                } else if (VARIABLES.contains(value.toString())){
                     token = Token.tokenType.VARIABLE;
-                } else if (constants.contains(value.toString())){
+                } else if (CONSTANTS.contains(value.toString())){
                     token = Token.tokenType.CONSTANT;
-                } else if (functions.contains(value.toString())){
+                } else if (FUNCTIONS.contains(value.toString())){
                     token = Token.tokenType.FUNCTION;
                 }
 
@@ -244,12 +188,12 @@ public class Lab2 {
             }
 
             // add clause and get next string
-            clauses.add(new Clause(tokens));
-            clauseString = br.readLine();
+            clause.add(new Literal(tokens));
+            literalString = br.readLine();
         }
         // close br and return KB
         br.close();
-        return clauses;
+        return clause;
     }
 
     private static HashSet<String> toHashSet(String[] array){
@@ -268,7 +212,7 @@ public class Lab2 {
         }
 
         // Attempt to make load Knowledge Base from file
-        List<Clause> clauses;
+        List<Literal> clauses;
         try{
             clauses = getKnowledgeBase(args[0]);
         } catch (Exception e){
