@@ -58,6 +58,10 @@ public class Lab2 {
             if(tokens.get(tokens.size() - 1).type == Token.tokenType.OR)
                 tokens.remove(tokens.size() - 1);
 
+            // add wrapper parentheses
+            tokens.add(0, new Token(Token.tokenType.OPEN_PARENTHESIS));
+            tokens.push(new Token(Token.tokenType.CLOSED_PARENTHESIS));
+
             this.tokens = tokens;
         }
 
@@ -85,6 +89,18 @@ public class Lab2 {
             }
             this.tokens = negation;
 
+        }
+
+        private void toCNF(){
+            Stack<Token> cnf = new Stack<>();
+            cnf.push(new Token(Token.tokenType.OPEN_PARENTHESIS));
+
+            while(!this.tokens.isEmpty()){
+                Token curToken = this.tokens.remove(0);
+
+            }
+
+            this.tokens = cnf;
         }
 
         @Override
@@ -146,39 +162,40 @@ public class Lab2 {
                 // test if alphanumeric
                 if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
                     value.append(c);
-                } else {
+                    continue;
+                }
 
-                    Token.tokenType token = null;
-                    if(predicates.contains(value.toString())){
-                        token = Token.tokenType.PREDICATE;
-                    } else if (variables.contains(value.toString())){
-                        token = Token.tokenType.VARIABLE;
-                    } else if (constants.contains(value.toString())){
-                        token = Token.tokenType.CONSTANT;
-                    } else if (functions.contains(value.toString())){
-                        token = Token.tokenType.FUNCTION;
-                    }
+                Token.tokenType token = null;
+                if(predicates.contains(value.toString())){
+                    token = Token.tokenType.PREDICATE;
+                } else if (variables.contains(value.toString())){
+                    token = Token.tokenType.VARIABLE;
+                } else if (constants.contains(value.toString())){
+                    token = Token.tokenType.CONSTANT;
+                } else if (functions.contains(value.toString())){
+                    token = Token.tokenType.FUNCTION;
+                }
 
-                    if(token != null){
-                        tokens.add(new Token(token, value.toString()));
-                        value = new StringBuilder();
-                    }
+                if(token != null){
+                    tokens.add(new Token(token, value.toString()));
+                    value = new StringBuilder();
+                }
 
 
-                    // Test current character
-                    switch (c) {
-                        case '!' -> tokens.add(new Token(Token.tokenType.NEGATION));
-                        case '(' -> tokens.add(new Token(Token.tokenType.OPEN_PARENTHESIS));
-                        case ')' -> tokens.add(new Token(Token.tokenType.CLOSED_PARENTHESIS));
-                        case ',' -> tokens.add(new Token(Token.tokenType.COMMA));
-                        case ' ' -> tokens.add(new Token(Token.tokenType.OR));
-                        // Unknown value
-                        default -> {
-                            br.close();
-                            throw new Exception("Parsing Error, unknown string: " + value);
-                        }
+                // Test current character
+                switch (c) {
+                    case '!' -> tokens.add(new Token(Token.tokenType.NEGATION));
+                    case '(' -> tokens.add(new Token(Token.tokenType.OPEN_PARENTHESIS));
+                    case ')' -> tokens.add(new Token(Token.tokenType.CLOSED_PARENTHESIS));
+                    case ',' -> tokens.add(new Token(Token.tokenType.COMMA));
+                    case ' ' -> tokens.add(new Token(Token.tokenType.OR));
+                    // Unknown value
+                    default -> {
+                        br.close();
+                        throw new Exception("Parsing Error, unknown string: " + value);
                     }
                 }
+
             }
 
             // add clause and get next string
