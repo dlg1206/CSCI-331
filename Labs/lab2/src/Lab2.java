@@ -89,19 +89,9 @@ public class Lab2 {
             }
             this.tokens = negation;
 
+
         }
 
-        private void toCNF(){
-            Stack<Token> cnf = new Stack<>();
-            cnf.push(new Token(Token.tokenType.OPEN_PARENTHESIS));
-
-            while(!this.tokens.isEmpty()){
-                Token curToken = this.tokens.remove(0);
-
-            }
-
-            this.tokens = cnf;
-        }
 
         @Override
         public String toString() {
@@ -135,7 +125,6 @@ public class Lab2 {
 
     private static List<Clause> getKnowledgeBase(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
-
 
         // Read in from file
         HashSet<String> predicates = toHashSet(br.readLine().split(" "));
@@ -237,6 +226,8 @@ public class Lab2 {
             c.negate();
             System.out.println("after negation: "  + c);
         }
+
+
 
 
 
