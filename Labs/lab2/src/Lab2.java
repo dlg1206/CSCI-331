@@ -47,6 +47,24 @@ public class Lab2 {
         public String toString() {
             return this.value;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Token token = (Token) o;
+
+            if (type != token.type) return false;
+            return Objects.equals(value, token.value);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = type != null ? type.hashCode() : 0;
+            result = 31 * result + (value != null ? value.hashCode() : 0);
+            return result;
+        }
     }
 
     private static class Clause {
@@ -59,8 +77,8 @@ public class Lab2 {
                 tokens.remove(tokens.size() - 1);
 
             // add wrapper parentheses
-            tokens.add(0, new Token(Token.tokenType.OPEN_PARENTHESIS));
-            tokens.push(new Token(Token.tokenType.CLOSED_PARENTHESIS));
+//            tokens.add(0, new Token(Token.tokenType.OPEN_PARENTHESIS));
+//            tokens.push(new Token(Token.tokenType.CLOSED_PARENTHESIS));
 
             this.tokens = tokens;
         }
@@ -88,30 +106,68 @@ public class Lab2 {
 
             }
             this.tokens = negation;
-
-
         }
 
 
         @Override
         public String toString() {
             StringBuilder clause = new StringBuilder();
-            for(Token token : this.tokens){
+            for(Token token : this.tokens)
                 clause.append(token);
-            }
+
             return clause.toString();
         }
     }
 
 
-    private static boolean plResolution(ArrayList<Clause> kbClauses, Clause a){
+    private static boolean plResolution(List<Clause> kbClauses){
 
-        if(a != null){
-            a.negate();
-            kbClauses.add(a);
+
+        List<Clause> clauses = new ArrayList<>(kbClauses);
+
+        List<Clause> newClauses = new ArrayList<>();
+
+        for(;;){
+            Clause ci = clauses.remove(0);
+            for(Clause cj : clauses){
+                List<Clause> resolvents = plResolve(ci, cj);
+                if(resolvents.isEmpty())
+                    return true;
+                newClauses.addAll(resolvents);
+            }
+            if(clauses.contains(newClauses))
+                return false;
+            clauses.addAll(newClauses);
+
         }
+    }
 
-        return false;
+    private static List<Clause> plResolve(Clause ci, Clause cj){
+
+        List<Clause> resolvents =  new ArrayList<>();
+        for(Token token : ci.tokens){
+            if(token.type == Token.tokenType.PREDICATE){
+                // 1. check if other has same predicate
+                if(cj.tokens.contains(token)){
+                    // 2. check if negated
+                    try{
+                        for(int i = 0; i < cj.tokens.size(); i++){
+
+                            if(token == cj.tokens.get(i) && cj.tokens.get(i - 1).type == Token.tokenType.NEGATION){
+
+                            }
+
+
+                        }
+                    } catch (Exception e){
+
+                    }
+                }
+            }
+
+        }
+        return null;
+
     }
 
     private static String unify(String x, String y, String o){
@@ -221,16 +277,7 @@ public class Lab2 {
             return;
         }
 
-        for (Clause c : clauses){
-            System.out.println("before negation: " + c);
-            c.negate();
-            System.out.println("after negation: "  + c);
-        }
-
-
-
-
-
+        plResolution(clauses);
 
     }
 }
