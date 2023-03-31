@@ -27,19 +27,25 @@ public class Lab2 {
             OR,
             AND
         }
-
-        private final String value;
         private final tokenType type;
+        private final String value;
 
+        public Token(tokenType type){
+            this.type = type;
+            // assign value
+            switch (this.type) {
+                case OPEN_PARENTHESIS -> this.value = "(";
+                case CLOSED_PARENTHESIS -> this.value = ")";
+                case COMMA -> this.value = ", ";
+                case NEGATION -> this.value = "¬";
+                case OR -> this.value = " ∨ ";
+                case AND -> this.value = " ∧ ";
+                default -> this.value =  "~";
+            }
+        }
         public Token(tokenType type, String value){
             this.type = type;
             this.value = value;
-        }
-
-
-
-        public tokenType getType() {
-            return this.type;
         }
 
         @Override
@@ -49,14 +55,14 @@ public class Lab2 {
     }
 
     private static class Clause {
-        private ArrayList<Token> tokens = new ArrayList<>();
+        private List<Token> tokens;
 
 
-        public Clause(){
-        }
-
-        public void addToken(Token token){
-            this.tokens.add(token);
+        public Clause(List<Token> tokens){
+            // remove extraneous or
+            if(tokens.get(tokens.size() - 1).type == Token.tokenType.OR)
+                tokens.remove(tokens.size() - 1);
+            this.tokens = tokens;
         }
 
         public void negate(){
@@ -65,11 +71,11 @@ public class Lab2 {
 
         @Override
         public String toString() {
-            String clause = "";
+            StringBuilder clause = new StringBuilder();
             for(Token token : this.tokens){
-                clause += token;
+                clause.append(token);
             }
-            return clause;
+            return "( " + clause + " )";
         }
     }
 
@@ -113,7 +119,7 @@ public class Lab2 {
 
             // init vars
             StringBuilder value = new StringBuilder();
-            Clause clause = new Clause();
+            List<Token> tokens = new ArrayList<>();
 
             // Parse each character
             for(char c : clauseString.toCharArray()){
@@ -136,16 +142,16 @@ public class Lab2 {
 
                     // if the tokenType not null, create new token and reset character string
                     if(token != null){
-                        clause.addToken(new Token(token, value.toString()));
+                        tokens.add(new Token(token, value.toString()));
                         value = new StringBuilder();
                     }
                     // test if single char token
                     switch (c) {
-                        case '!' -> clause.addToken(new Token(Token.tokenType.NEGATION, "!"));
-                        case '(' -> clause.addToken(new Token(Token.tokenType.OPEN_PARENTHESIS, "("));
-                        case ')' -> clause.addToken(new Token(Token.tokenType.CLOSED_PARENTHESIS, ")"));
-                        case ',' -> clause.addToken(new Token(Token.tokenType.COMMA, ","));
-                        case ' ' -> clause.addToken(new Token(Token.tokenType.AND, " "));
+                        case '!' -> tokens.add(new Token(Token.tokenType.NEGATION));
+                        case '(' -> tokens.add(new Token(Token.tokenType.OPEN_PARENTHESIS));
+                        case ')' -> tokens.add(new Token(Token.tokenType.CLOSED_PARENTHESIS));
+                        case ',' -> tokens.add(new Token(Token.tokenType.COMMA));
+                        case ' ' -> tokens.add(new Token(Token.tokenType.OR));
                         // Unknown value
                         default -> {
                             br.close();
@@ -156,7 +162,7 @@ public class Lab2 {
             }
 
             // add clause and get next string
-            clauses.add(clause);
+            clauses.add(new Clause(tokens));
             clauseString = br.readLine();
         }
         // close br and return KB
