@@ -1,8 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * file: lab2.java
@@ -12,14 +9,15 @@ import java.util.List;
  **/
 public class Lab2 {
 
+    private static Set<String> PREDICATES;
+    private static Set<String> VARIABLES;
+    private static Set<String> CONSTANTS;
+    private static Set<String> FUNCTIONS;
 
 
     private static class Token {
         public enum tokenType{
-            PREDICATE,
-            VARIABLE,
-            CONSTANT,
-            FUNCTION,
+            ID,
             NEGATION,
             OPEN_PARENTHESIS,
             CLOSED_PARENTHESIS,
@@ -62,6 +60,8 @@ public class Lab2 {
             // remove extraneous or
             if(tokens.get(tokens.size() - 1).type == Token.tokenType.OR)
                 tokens.remove(tokens.size() - 1);
+
+//            tokens.add(0, new Token(Token.tokenType.OPEN_PARENTHESIS));
             this.tokens = tokens;
         }
 
@@ -75,7 +75,7 @@ public class Lab2 {
             for(Token token : this.tokens){
                 clause.append(token);
             }
-            return "( " + clause + " )";
+            return clause.toString();
         }
     }
 
@@ -103,10 +103,10 @@ public class Lab2 {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         // Read in from file
-        HashSet<String> predicates = toHashSet(br.readLine().split(" "));
-        HashSet<String> variables  = toHashSet(br.readLine().split(" "));
-        HashSet<String> constants  = toHashSet(br.readLine().split(" "));
-        HashSet<String> functions  = toHashSet(br.readLine().split(" "));
+        PREDICATES = toHashSet(br.readLine().split(" "));
+        VARIABLES  = toHashSet(br.readLine().split(" "));
+        CONSTANTS  = toHashSet(br.readLine().split(" "));
+        FUNCTIONS  = toHashSet(br.readLine().split(" "));
 
         List<Clause> clauses = new ArrayList<>();
 
@@ -128,24 +128,15 @@ public class Lab2 {
                 if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
                     value.append(c);
                 } else {
-                    // else, end of id
-                    Token.tokenType token = null;
-                    if(predicates.contains(value.toString())){
-                        token = Token.tokenType.PREDICATE;
-                    } else if (variables.contains(value.toString())){
-                        token = Token.tokenType.VARIABLE;
-                    } else if (constants.contains(value.toString())){
-                        token = Token.tokenType.CONSTANT;
-                    } else if (functions.contains(value.toString())){
-                        token = Token.tokenType.FUNCTION;
-                    }
 
-                    // if the tokenType not null, create new token and reset character string
-                    if(token != null){
-                        tokens.add(new Token(token, value.toString()));
+                    // End of ID. Add new ID if one is present
+                    if(!value.isEmpty()){
+                        tokens.add(new Token(Token.tokenType.ID, value.toString()));
                         value = new StringBuilder();
                     }
-                    // test if single char token
+
+
+                    // Test current character
                     switch (c) {
                         case '!' -> tokens.add(new Token(Token.tokenType.NEGATION));
                         case '(' -> tokens.add(new Token(Token.tokenType.OPEN_PARENTHESIS));
@@ -195,10 +186,14 @@ public class Lab2 {
             return;
         }
 
-        for (Clause c : clauses)
+        for (Clause c : clauses){
             System.out.println(c);
+            c.negate();
+//            System.out.println(c);
+        }
 
-//        plResolution(clauses, null);
+
+
 
     }
 }
