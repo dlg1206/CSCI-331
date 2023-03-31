@@ -65,21 +65,29 @@ public class Lab2 {
         }
 
         public void negate(){
-//            List<Token> negTokens = new ArrayList<>();
-//
-//            while(this.tokens != null){
-//                Token curToken = this.tokens.remove(0);
-//
-//                if(PREDICATES.contains(curToken.value)){
-//
-//                    if(negTokens.isEmpty() || negTokens.get(negTokens.size())){
-//                        negTokens.add(new Token(Token.tokenType.NEGATION));
-//                        negTokens.add(curToken);
-//                    } else {
-//
-//                    }
-//                }
-//            }
+            Stack<Token> negation = new Stack<>();
+
+            while(!this.tokens.isEmpty()){
+                Token curToken = this.tokens.remove(0);
+
+                if(PREDICATES.contains(curToken.value)){
+                    // push negation if stack empty or top is not a double negation
+                    if(negation.isEmpty() || negation.peek().type != Token.tokenType.NEGATION){
+                        negation.push(new Token(Token.tokenType.NEGATION));
+                    } else {
+                        negation.pop();
+                    }
+                }
+
+                switch (curToken.type){
+                    case AND -> negation.push(new Token(Token.tokenType.OR));
+                    case OR -> negation.push(new Token(Token.tokenType.AND));
+                    default -> negation.add(curToken);
+                }
+
+
+            }
+            this.tokens = negation;
 
         }
 
@@ -201,9 +209,9 @@ public class Lab2 {
         }
 
         for (Clause c : clauses){
-            System.out.println(c);
-//            c.negate();
-//            System.out.println(c);
+            System.out.println("before negation: " + c);
+            c.negate();
+            System.out.println("after negation: "  + c);
         }
 
 
