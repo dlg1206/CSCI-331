@@ -52,15 +52,25 @@ public class Lab2 {
 
     // helper classes
     private static class Clause{
+        private List<Predicate> predicates;
         public Clause(List<Predicate> predicates){
-
+            this.predicates = new ArrayList<>(predicates);
         }
+
+        @Override
+        public String toString() {
+            StringBuilder string = new StringBuilder();
+            for(Predicate p : predicates)
+                string.append(p).append(" ");
+            return string.toString();
+        }
+
     }
     
     private static class Predicate{
         private boolean isNegated = false;
-        private String id;
-        private List<Term> arguments = new ArrayList<>();
+        private final String id;
+        private final List<Term> arguments = new ArrayList<>();
         public Predicate(List<Token> tokens){
 
             // check if negated
@@ -130,8 +140,8 @@ public class Lab2 {
     }
 
     private static class Function extends Term{
-        private String id;
-        private List<Term> arguments = new ArrayList<>();
+        private final String id;
+        private final List<Term> arguments = new ArrayList<>();
         public Function(String id, List<Token> tokens) {
             this.id = id;
 
@@ -250,15 +260,8 @@ public class Lab2 {
                     }
                 }
             }
-            System.out.println("file:\t" + clauseStr);
-            System.out.print("stored:\t");
-            for (Predicate p : preds){
-                System.out.print(p + " ");
-            }
-            System.out.println("\n");
             clauses.add(new Clause(preds));
             clauseStr = br.readLine();
-            
         }
 
 
@@ -284,6 +287,8 @@ public class Lab2 {
             System.err.println("Error: " + e);
             return;
         }
+
+        int a = 0;
 
     }
 }
