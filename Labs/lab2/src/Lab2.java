@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -59,15 +58,122 @@ public class Lab2 {
     }
     
     private static class Predicate{
-        private Stack<Token> tokens;
-        public Predicate(Stack<Token> tokens){
-            this.tokens = tokens;
+        private boolean isNegated = false;
+        private String id;
+        private List<Term> arguments = new ArrayList<>();
+        public Predicate(List<Token> tokens){
+
+            // check if negated
+            if(tokens.get(0).type == Token.tokenType.NEGATION){
+                this.isNegated = true;
+                tokens.remove(0);
+            }
+
+            this.id = tokens.get(0).value;
+            tokens.remove(0);
+
+            // Parse arguments
+            while (!tokens.isEmpty()){
+                Token curToken = tokens.remove(0);
+                switch (curToken.type){
+                    case CONSTANT -> this.arguments.add(new Constant(curToken.value));
+                    case VARIABLE -> this.arguments.add(new Variable(curToken.value));
+                    case FUNCTION -> this.arguments.add(new Function(curToken.value, tokens));
+                }
+
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder string = new StringBuilder();
+
+            if(this.isNegated) string.append('!');
+
+            string.append(this.id);
+
+            if(!this.arguments.isEmpty()) string.append("(");
+
+            for(int i = 0; i < this.arguments.size(); i++){
+                string.append(this.arguments.get(i));
+
+                if(i + 1 < this.arguments.size()) string.append(",");
+            }
+            if(!this.arguments.isEmpty()) string.append(")");
+            return string.toString();
+        }
+    }
+    private static abstract class Term {
+    }
+
+    private static class Constant extends Term{
+        private final String id;
+        public Constant(String id){
+            this.id = id;
+        }
+        @Override
+        public String toString() {
+            return this.id;
+        }
+    }
+
+    private static class Variable extends Term{
+        private final String id;
+        // value?
+        public Variable(String id){
+            this.id = id;
+        }
+        @Override
+        public String toString() {
+            return this.id;
+        }
+    }
+
+    private static class Function extends Term{
+        private String id;
+        private List<Term> arguments = new ArrayList<>();
+        public Function(String id, List<Token> tokens) {
+            this.id = id;
+
+            int openCount = 1;
+            int closeCount = 0;
+            tokens.remove(0);
+            // Parse arguments
+            while (openCount != closeCount){
+                Token curToken = tokens.remove(0);
+                switch (curToken.type){
+                    case CONSTANT -> this.arguments.add(new Constant(curToken.value));
+                    case VARIABLE -> this.arguments.add(new Variable(curToken.value));
+                    case FUNCTION -> this.arguments.add(new Function(curToken.value, tokens));
+                    case OPEN_PARENTHESIS -> openCount++;
+                    case CLOSED_PARENTHESIS -> closeCount++;
+                }
+
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder string = new StringBuilder();
+
+            string.append(this.id);
+
+            string.append("(");
+
+            for(int i = 0; i < this.arguments.size(); i++){
+                string.append(this.arguments.get(i));
+
+                if(i + 1 < this.arguments.size()) string.append(",");
+            }
+            string.append(")");
+            return string.toString();
         }
 
     }
-    private class term{
 
-    }
+
+
+
 
     private static HashSet<String> toHashSet(String[] array){
         List<String> tmp = new ArrayList<>(Arrays.asList(array));
@@ -97,7 +203,7 @@ public class Lab2 {
 
             // init vars
             StringBuilder value = new StringBuilder();
-            Stack<Token> tokens = new Stack<>();
+            List<Token> tokens = new ArrayList<>();
             List<Predicate> preds = new ArrayList<>();
 
 
@@ -144,7 +250,12 @@ public class Lab2 {
                     }
                 }
             }
-
+            System.out.println("file:\t" + clauseStr);
+            System.out.print("stored:\t");
+            for (Predicate p : preds){
+                System.out.print(p + " ");
+            }
+            System.out.println("\n");
             clauses.add(new Clause(preds));
             clauseStr = br.readLine();
             
