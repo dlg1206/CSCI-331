@@ -102,7 +102,7 @@ public class Lab2 {
             }
         }
 
-        public boolean isComplementOf(Predicate other){
+        public boolean isComplement(Predicate other){
             return this.isNegated != other.isNegated && this.id.equals(other.id) && this.arguments.equals(other.arguments);
         }
 
@@ -283,50 +283,50 @@ public class Lab2 {
     }
 
     public static boolean plResolution(List<Clause> knowledgeBase){
-        // for each pair of clauses C_i, C_j in clauses do
-        List<Clause> clausesList = new ArrayList<>(knowledgeBase);
-        Set<Clause> newClauses = new LinkedHashSet<>();
-        for (int i = 0; i < clausesList.size() - 1; i++) {
-            Clause ci = clausesList.get(i);
-            for (int j = i + 1; j < clausesList.size(); j++) {
-                Clause cj = clausesList.get(j);
-                // resolvents <- PL-RESOLVE(C_i, C_j)
-                Clause resolvents = resolve(ci, cj);
-                // if resolvents contains the empty clause then return true
-                if (resolvents.predicates.isEmpty()) {
-                    return true;
+
+        List<Clause> clauses = new ArrayList<>(knowledgeBase);
+        Set<Clause> n_ew = new LinkedHashSet<>();
+        for(;;){
+            List<Clause> clausesList = new ArrayList<>(clauses);
+            for (int i = 0; i < clausesList.size() - 1; i++) {
+                Clause ci = clausesList.get(i);
+                for (int j = i + 1; j < clausesList.size(); j++) {
+                    Clause cj = clausesList.get(j);
+
+                    List<Clause> resolvents = resolve(ci, cj);
+//                    System.out.println("[ " + ci + " ] + [ " + cj + "] => ");
+                    for(Clause c : resolvents){
+//                        System.out.println("\t" + c);
+                        if(c.predicates.isEmpty()) return false;
+                    }
+
+                    n_ew.addAll(resolvents);
                 }
-                // new <- new U resolvents
-                newClauses.add(resolvents);
             }
+            // if new is subset of clauses then return false
+            if (clauses.containsAll(n_ew)) return true;
+
+            // clauses <- clauses U new
+            clauses.addAll(n_ew);
         }
-        // if new is subset of clauses then return false
-        if (clausesList.containsAll(newClauses)) {
-            return false;
-        }
 
-        // clauses <- clauses U new
-        clausesList.addAll(newClauses);
-
-
-        return false;
     }
 
-    public static Clause resolve(Clause ci, Clause cj){
-        List<Predicate> predicates = new ArrayList<>(ci.predicates);
-        predicates.addAll(cj.predicates);
-
-        for (Predicate pi : ci.predicates){
-            for (Predicate pj : cj.predicates){
-                if(pi.isComplementOf(pj)){
-                    predicates.remove(pi);
-                    predicates.remove(pj);
+    public static List<Clause> resolve(Clause ci, Clause cj){
+        List<Clause> result = new ArrayList<>();
+        List<Predicate> union = new ArrayList<>(ci.predicates);
+        union.addAll(cj.predicates);
+        for(Predicate pi : ci.predicates){
+            for(Predicate pj : cj.predicates){
+                if(pi.isComplement(pj)){
+                    List<Predicate> p = new ArrayList<>(union);
+                    p.remove(pi);
+                    p.remove(pj);
+                    result.add(new Clause(p));
                 }
             }
         }
-
-
-        return new Clause(predicates);
+        return result;
     }
 
     public static void main(String[] args) {
@@ -348,9 +348,9 @@ public class Lab2 {
 
 
         if(plResolution(clauses)){
-            System.out.println("Yes");
+            System.out.println("yes");
         } else {
-            System.out.println("No");
+            System.out.println("no");
         }
 
     }
