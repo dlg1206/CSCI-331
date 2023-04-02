@@ -6,7 +6,7 @@
 testPath="./testcases"
 PROG="$1 $2"
 
-FILES="$testPath/*/*.cnf"
+FILES="$testPath/prop/*.cnf"
 for fP in $FILES; do
 		 basename $fP
 		#echo $PROG $fP

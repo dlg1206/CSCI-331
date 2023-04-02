@@ -103,7 +103,19 @@ public class Lab2 {
         }
 
         public boolean isComplement(Predicate other){
-            return this.isNegated != other.isNegated && this.id.equals(other.id) && this.arguments.equals(other.arguments);
+           if(this.isNegated == other.isNegated) return false;
+
+           return this.toStringNoNegation().equals(other.toStringNoNegation());
+
+        }
+
+        public String toStringNoNegation(){
+            String toString = this.toString();
+
+            if(toString.charAt(0) == '!')
+                return toString.substring(1);
+            return toString;
+
         }
 
 
