@@ -8,6 +8,8 @@ import java.util.*;
 
 public class Lab2 {
 
+    private static Map<String, String> VARS = new HashMap<>();
+
     private static class Token {
         public enum tokenType {
             PREDICATE,
@@ -155,13 +157,22 @@ public class Lab2 {
 
     private static class Variable extends Term{
         private final String id;
-        // value?
+        private String value;
         public Variable(String id){
             this.id = id;
         }
         @Override
         public String toString() {
-            return this.id;
+
+//            String toString = VARS.get(this.id);
+//            if(toString == null)
+//                return "_";
+//            return toString;
+
+//            if(this.value == null)
+//                return "_";
+//            return this.value;
+            return "_";
         }
     }
 
@@ -334,6 +345,31 @@ public class Lab2 {
                     List<Predicate> p = new ArrayList<>(union);
                     p.remove(pi);
                     p.remove(pj);
+
+                    for(int i = 0; i < pi.arguments.size(); i++){
+                        Term ti = pi.arguments.get(0);
+                        Term tj = pj.arguments.get(0);
+                        // var : var
+                        // var : val
+                        // val : var
+                        if(ti instanceof Variable && tj instanceof Variable){
+                            String uuid = UUID.randomUUID().toString();
+                            ((Variable) ti).value = uuid;
+                            ((Variable) tj).value = uuid;
+                            continue;
+                        }
+
+                        if(ti instanceof Variable && tj instanceof Constant){
+                            ((Variable) ti).value = ((Constant) tj).id;
+                            continue;
+                        }
+
+                        if(tj instanceof Variable && ti instanceof Constant){
+                            ((Variable) tj).value = ((Constant) ti).id;
+                        }
+
+                    }
+
                     result.add(new Clause(p));
                 }
             }
