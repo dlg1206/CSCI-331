@@ -58,6 +58,14 @@ public class Lab2 {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Clause other = (Clause) o;
+            return this.toString().equals(other.toString());
+        }
+
+        @Override
         public String toString() {
             StringBuilder string = new StringBuilder();
             for(Predicate p : predicates)
@@ -94,6 +102,8 @@ public class Lab2 {
             }
         }
 
+
+
         @Override
         public String toString() {
             StringBuilder string = new StringBuilder();
@@ -113,6 +123,7 @@ public class Lab2 {
             return string.toString();
         }
     }
+
     private static abstract class Term {
     }
 
@@ -180,9 +191,6 @@ public class Lab2 {
         }
 
     }
-
-
-
 
 
     private static HashSet<String> toHashSet(String[] array){
@@ -271,6 +279,24 @@ public class Lab2 {
 
     }
 
+    public static boolean plResolution(List<Clause> knowledgeBase){
+        Set<Clause> clauses = new HashSet<>(knowledgeBase);
+        Set<Clause> n_ew = new HashSet<>();
+        for(;;){
+            Clause curClause = knowledgeBase.remove(0);
+            for(Clause other : knowledgeBase){
+                Clause resolvents = resolve(curClause, other);
+                if(resolvents.predicates.isEmpty()) return true;
+                n_ew.add(resolvents);
+            }
+            if(clauses.containsAll(n_ew)) return false;
+            clauses.addAll(n_ew);
+        }
+    }
+    public static Clause resolve(Clause ci, Clause cj){
+        return null;
+    }
+
     public static void main(String[] args) {
         // Check for correct args
         if(args.length != 1){
@@ -287,6 +313,9 @@ public class Lab2 {
             System.err.println("Error: " + e);
             return;
         }
+
+        for(Clause c : clauses)
+            System.out.println(c);
 
         int a = 0;
 
