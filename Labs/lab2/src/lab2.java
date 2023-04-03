@@ -3,13 +3,17 @@ import java.io.FileReader;
 import java.util.*;
 
 /**
+ * file: lab2.java
+ * CSCI-331 Lab 2
+ * *
  * @author Derek Garcia
  **/
+public class lab2 {
 
-public class Lab2 {
 
-    private static Map<String, String> VARS = new HashMap<>();
-
+    /**
+     * Utility Token class used for parsing
+     */
     private static class Token {
         public enum tokenType {
             PREDICATE,
@@ -27,6 +31,11 @@ public class Lab2 {
         private final tokenType type;
         private final String value;
 
+        /**
+         * Create new token
+         *
+         * @param type type of token
+         */
         public Token(tokenType type) {
             this.type = type;
             // assign value
@@ -41,10 +50,18 @@ public class Lab2 {
             }
         }
 
+
+        /**
+         * Create a new token with a value
+         *
+         * @param type type of token
+         * @param value String value of the token
+         */
         public Token(tokenType type, String value) {
             this.type = type;
             this.value = value;
         }
+
 
         @Override
         public String toString() {
@@ -52,10 +69,20 @@ public class Lab2 {
         }
     }
 
-    // helper classes
-    private static class Clause{
-        private List<Predicate> predicates;
-        public Clause(List<Predicate> predicates){
+    //
+    // Utilities
+    //
+
+    /**
+     * Clause object, holds Predicates
+     */
+    private record Clause(List<Predicate> predicates) {
+
+        /**
+         * Constructor
+         * @param predicates make a new Clause from a list of predicates
+         */
+        private Clause(List<Predicate> predicates) {
             this.predicates = new ArrayList<>(predicates);
         }
 
@@ -70,17 +97,26 @@ public class Lab2 {
         @Override
         public String toString() {
             StringBuilder string = new StringBuilder();
-            for(Predicate p : predicates)
+            for (Predicate p : predicates)
                 string.append(p).append(" ");
             return string.toString();
         }
 
     }
-    
+
+    /**
+     * Predicate class
+     */
     private static class Predicate{
+
         private boolean isNegated = false;
         private final String id;
         private final List<Term> arguments = new ArrayList<>();
+
+        /**
+         * Create a new predicate from a list of tokens
+         * @param tokens tokens to make the predicate from
+         */
         public Predicate(List<Token> tokens){
 
             // check if negated
@@ -89,6 +125,7 @@ public class Lab2 {
                 tokens.remove(0);
             }
 
+            // Set id
             this.id = tokens.get(0).value;
             tokens.remove(0);
 
@@ -100,20 +137,29 @@ public class Lab2 {
                     case VARIABLE -> this.arguments.add(new Variable(curToken.value));
                     case FUNCTION -> this.arguments.add(new Function(curToken.value, tokens));
                 }
-
             }
         }
 
+        /**
+         * Tests if other predicate is the complement of this predicate
+         *
+         * @param other other predicate
+         * @return true if opposite, false otherwise
+         */
         public boolean isComplement(Predicate other){
            if(this.isNegated == other.isNegated) return false;
-
+           // Compare toString
            return this.toStringNoNegation().equals(other.toStringNoNegation());
-
         }
 
+        /**
+         * Convert to string minus the negation character
+         * @return toString
+         */
         public String toStringNoNegation(){
             String toString = this.toString();
 
+            // remove '!' if present
             if(toString.charAt(0) == '!')
                 return toString.substring(1);
             return toString;
@@ -125,15 +171,14 @@ public class Lab2 {
         public String toString() {
             StringBuilder string = new StringBuilder();
 
+            // Get negation and id
             if(this.isNegated) string.append('!');
-
             string.append(this.id);
 
             if(!this.arguments.isEmpty()) string.append("(");
-
+            // Get arguments
             for(int i = 0; i < this.arguments.size(); i++){
                 string.append(this.arguments.get(i));
-
                 if(i + 1 < this.arguments.size()) string.append(",");
             }
             if(!this.arguments.isEmpty()) string.append(")");
@@ -141,44 +186,68 @@ public class Lab2 {
         }
     }
 
+    /**
+     * Template class used for predicate arguments
+     */
     private static abstract class Term {
     }
 
+    /**
+     * Represents Constant literal
+     */
     private static class Constant extends Term{
         private final String id;
+
+        /**
+         * Constant constructor
+         *
+         * @param id id string
+         */
         public Constant(String id){
             this.id = id;
         }
+
         @Override
         public String toString() {
             return this.id;
         }
     }
 
+    /**
+     * Represents Variable literal
+     */
     private static class Variable extends Term{
+
         private final String id;
         private String value;
+
+        /**
+         * Constructor Variable
+         *
+         * @param id id string
+         */
         public Variable(String id){
             this.id = id;
         }
+
         @Override
         public String toString() {
-
-//            String toString = VARS.get(this.id);
-//            if(toString == null)
-//                return "_";
-//            return toString;
-
-//            if(this.value == null)
-//                return "_";
-//            return this.value;
             return "_";
         }
     }
 
+    /**
+     * Represents Function literal
+     */
     private static class Function extends Term{
         private final String id;
         private final List<Term> arguments = new ArrayList<>();
+
+        /**
+         * Function construct
+         * @param id id string
+         * @param tokens tokens to make the predicate from
+         */
         public Function(String id, List<Token> tokens) {
             this.id = id;
 
@@ -219,16 +288,33 @@ public class Lab2 {
     }
 
 
+    //
+    // File Helps
+    //
+
+    /**
+     * Convert String[] to utility hashset
+     *
+     * @param array String[]
+     * @return Hashset
+     */
     private static HashSet<String> toHashSet(String[] array){
         List<String> tmp = new ArrayList<>(Arrays.asList(array));
         tmp.remove(0);  // remove line header
         return new HashSet<>(tmp);
     }
 
-    // tokenize list
+    /**
+     * Tokenize Knowledge Base from file
+     *
+     * @param filepath file path to Knowledge Base
+     * @return List of clauses from KB
+     * @throws Exception issue parsing file
+     */
     public static List<Clause> loadFile(String filepath) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
+        // Covert to hashsets
         Set<String> predicates = toHashSet(br.readLine().split(" "));
         Set<String> variables  = toHashSet(br.readLine().split(" "));
         Set<String> constants  = toHashSet(br.readLine().split(" "));
@@ -243,13 +329,10 @@ public class Lab2 {
         // Foreach Clause in KB
         while(clauseStr != null) {
 
-
-
             // init vars
             StringBuilder value = new StringBuilder();
             List<Token> tokens = new ArrayList<>();
             List<Predicate> preds = new ArrayList<>();
-
 
             // Parse each character
             for (char c : clauseStr.toCharArray()) {
@@ -276,7 +359,6 @@ public class Lab2 {
                     value = new StringBuilder();
                 }
 
-
                 // Test current character
                 switch (c) {
                     case '!' -> tokens.add(new Token(Token.tokenType.NEGATION));
@@ -297,51 +379,66 @@ public class Lab2 {
             clauses.add(new Clause(preds));
             clauseStr = br.readLine();
         }
-
-
         // close br and return clauses
         br.close();
         return clauses;
-
     }
 
+    /**
+     * Perform pl-Resolution
+     *
+     * @param knowledgeBase knowledge base to resolve
+     * @return whether kn resolves or not
+     */
     public static boolean plResolution(List<Clause> knowledgeBase){
 
+        // init lists
         List<Clause> clauses = new ArrayList<>(knowledgeBase);
         Set<Clause> n_ew = new LinkedHashSet<>();
+
+        // Keep resolving until end
         for(;;){
             List<Clause> clausesList = new ArrayList<>(clauses);
+            // Cycle through each clause paor
             for (int i = 0; i < clausesList.size() - 1; i++) {
                 Clause ci = clausesList.get(i);
                 for (int j = i + 1; j < clausesList.size(); j++) {
                     Clause cj = clausesList.get(j);
-
+                    // attempt to resolve
                     List<Clause> resolvents = resolve(ci, cj);
-//                    System.out.println("[ " + ci + " ] + [ " + cj + "] => ");
+                    // System.out.println("[ " + ci + " ] + [ " + cj + "] => ");
                     for(Clause c : resolvents){
-//                        System.out.println("\t" + c);
+                        // System.out.println("\t" + c);
                         if(c.predicates.isEmpty()) return false;
                     }
-
                     n_ew.addAll(resolvents);
                 }
             }
             // if new is subset of clauses then return false
             if (clauses.containsAll(n_ew)) return true;
-
-            // clauses <- clauses U new
             clauses.addAll(n_ew);
         }
-
     }
 
+    /**
+     * Attempt resolve two clause
+     *
+     * @param ci Clause 1
+     * @param cj Clause 2
+     * @return List of clauses to resolve
+     */
     public static List<Clause> resolve(Clause ci, Clause cj){
+
         List<Clause> result = new ArrayList<>();
         List<Predicate> union = new ArrayList<>(ci.predicates);
         union.addAll(cj.predicates);
+
+        // Cycle through lifes
         for(Predicate pi : ci.predicates){
             for(Predicate pj : cj.predicates){
+                // test if complements
                 if(pi.isComplement(pj)){
+                    // build new clause
                     List<Predicate> p = new ArrayList<>(union);
                     p.remove(pi);
                     p.remove(pj);
@@ -367,9 +464,7 @@ public class Lab2 {
                         if(tj instanceof Variable && ti instanceof Constant){
                             ((Variable) tj).value = ((Constant) ti).id;
                         }
-
                     }
-
                     result.add(new Clause(p));
                 }
             }
@@ -377,6 +472,11 @@ public class Lab2 {
         return result;
     }
 
+    /**
+     * Parse file
+     *
+     * @param args path to kb file
+     */
     public static void main(String[] args) {
         // Check for correct args
         if(args.length != 1){
@@ -394,7 +494,7 @@ public class Lab2 {
             return;
         }
 
-
+        // Test if can resolve
         if(plResolution(clauses)){
             System.out.println("yes");
         } else {
