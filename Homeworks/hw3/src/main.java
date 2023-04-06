@@ -9,8 +9,7 @@ import java.util.Set;
 
 public class main {
 
-
-
+    // utility class to hold values
     public static class Class{
         private final Boolean[] attributes = new Boolean[8];
         private final String value;
@@ -34,11 +33,12 @@ public class main {
         }
     }
 
+    // logBase 2
     private static double log2(double n){
-        System.out.println("log2("+n+"): "+Math.log(n) / Math.log(2));
         return Math.log(n) / Math.log(2);
     }
 
+    // B function
     private static double B(double q){
         if(q == 0)
             return 0;
@@ -46,6 +46,7 @@ public class main {
     }
 
 
+    // perform remainder calc for booleans
     private static double getRemainder(int i, List<Class> classList){
         Set<Class> isTrue = new HashSet<>();
         Set<Class> isFalse = new HashSet<>();
@@ -61,16 +62,14 @@ public class main {
                 if(c.value.equals("A"))
                     numAF++;
             }
-
-
-
         }
 
+        // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
+        double remainder = ((double) isTrue.size() / classList.size()) * B(numAT / isTrue.size()) +
+                ((double) isFalse.size() / classList.size()) * B(numAF / isFalse.size());
 
-        double tA = ((double) isTrue.size() / classList.size()) * B(numAT / isTrue.size());
-        double tB = ((double) isFalse.size() / classList.size()) * B(numAF / isFalse.size());
-
-        return tA + tB;
+        System.out.println("Remainder(" + i + "): " + remainder);
+        return remainder;
 
     }
 
@@ -84,10 +83,10 @@ public class main {
             classList.add(new Class(line.split(" ")));
             line = br.readLine();
         }
-        System.out.println(getRemainder(0, classList));
-//        double a = (double) .5;
-//        System.out.println(B(a));
-//        System.out.println(log2(1));
+
+        getRemainder(0, classList);
+        getRemainder(1, classList);
+
 
     }
 }
