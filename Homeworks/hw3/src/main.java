@@ -105,7 +105,14 @@ public class main {
 //            }
 //        }
 //        getRemainder(3, classList);
-//        List<Class> f = getTF(3, false, classList);
+
+        List<Class> f = getTF(3, true, classList);
+        int count = 0;
+        for(Class cl : f){
+            if(cl.value.equals("A"))
+                count++;
+        }
+        System.out.println(count);
 //        for(int i = 0; i < 8; i++){
 ////            if(i == 3)
 ////                continue;
