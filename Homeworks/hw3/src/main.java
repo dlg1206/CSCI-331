@@ -74,7 +74,7 @@ public class main {
     }
 
     public static void main(String[] args) throws IOException {
-        String filepath = "test.dat";
+        String filepath = "dtree-data.dat";
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         String line = br.readLine();
@@ -83,9 +83,16 @@ public class main {
             classList.add(new Class(line.split(" ")));
             line = br.readLine();
         }
-
-        getRemainder(0, classList);
-        getRemainder(1, classList);
+        double remainderValue = Double.MAX_VALUE;
+        int n = -1;
+        for(int i = 0; i < 8; i++){
+            double r = getRemainder(i, classList);
+            if(r < remainderValue){
+                remainderValue = r;
+                n = i;
+            }
+        }
+        System.out.println("Smallest Remainder: " + n);
 
 
     }
