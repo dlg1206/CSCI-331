@@ -73,9 +73,18 @@ public class main {
         return remainder;
 
     }
+    private static List<Class> getTF(int i, boolean bool, List<Class> classList){
+        List<Class> subset = new ArrayList<>();
+        for(Class c : classList){
+            if(c.attributes[i] == bool)
+                subset.add(c);
+        }
+        return subset;
+
+    }
 
     public static void main(String[] args) throws IOException {
-        String filepath = "vid1.dat";
+        String filepath = "dtree-data.dat";
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         String line = br.readLine();
@@ -88,8 +97,29 @@ public class main {
 
         double remainderValue = Double.MAX_VALUE;
         int n = -1;
-        for(int i = 0; i < 3; i++){
-            double r = getRemainder(i, classList);
+//        for(int i = 0; i < 8; i++){
+//            double r = getRemainder(i, classList);
+//            if(r < remainderValue){
+//                remainderValue = r;
+//                n = i;
+//            }
+//        }
+//        getRemainder(3, classList);
+//        List<Class> f = getTF(3, false, classList);
+//        for(int i = 0; i < 8; i++){
+////            if(i == 3)
+////                continue;
+//            double r = getRemainder(i, f);
+//            if(r < remainderValue){
+//                remainderValue = r;
+//                n = i;
+//            }
+//        }
+        List<Class> t = getTF(3, true, classList);
+        for(int i = 0; i < 8; i++){
+//            if(i == 3)
+//                continue;
+            double r = getRemainder(i, t);
             if(r < remainderValue){
                 remainderValue = r;
                 n = i;
