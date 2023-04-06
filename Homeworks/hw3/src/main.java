@@ -11,12 +11,13 @@ public class main {
 
     // utility class to hold values
     public static class Class{
-        private final Boolean[] attributes = new Boolean[8];
+        private final Boolean[] attributes;
         private final String value;
 
 
         public Class(String[] args){
 
+            this.attributes = new Boolean[args.length - 1];
             for(int i = 0; i <args.length - 1; i++)
                 this.attributes[i] = args[i].equals("True");
 
@@ -74,7 +75,7 @@ public class main {
     }
 
     public static void main(String[] args) throws IOException {
-        String filepath = "dtree-data.dat";
+        String filepath = "vid1.dat";
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         String line = br.readLine();
@@ -83,9 +84,11 @@ public class main {
             classList.add(new Class(line.split(" ")));
             line = br.readLine();
         }
+        br.close();
+
         double remainderValue = Double.MAX_VALUE;
         int n = -1;
-        for(int i = 0; i < 8; i++){
+        for(int i = 0; i < 3; i++){
             double r = getRemainder(i, classList);
             if(r < remainderValue){
                 remainderValue = r;
