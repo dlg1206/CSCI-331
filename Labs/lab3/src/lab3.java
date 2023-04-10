@@ -14,9 +14,9 @@ import java.util.List;
 public class lab3 {
 
 
-    private static void assertFileExists(String path) throws Exception {
+    private static void assertFileExists(String path) throws LabException.BadArgs {
         if(!new File(path).isFile())
-            throw new Exception("\"" + path + "\" is does not exist");
+            throw new LabException.BadArgs("\"" + path + "\" is does not exist");
     }
 
     private static List<Data> loadData(String filepath) throws Exception {
@@ -48,7 +48,7 @@ public class lab3 {
         // validate args
         try{
             if(args.length == 0)
-                throw new Exception("No keyword given");
+                throw new LabException.BadArgs("No keyword given");
 
             // test keyword
             switch (args[0]) {
@@ -57,14 +57,14 @@ public class lab3 {
 
                     // correct arg count
                     if (args.length != 4)
-                        throw new Exception("Expected 3 arguments but got " + (args.length - 1));   // -1 for keyword
+                        throw new LabException.BadArgs("Expected 3 arguments but got " + (args.length - 1));   // -1 for keyword
 
                     // check if valid file
                     assertFileExists(args[1]);
 
                     // allowed learning type
                     if (!args[3].equals("dt") && !args[3].equals("ada"))
-                        throw new Exception("Unknown learning-type, expected \"dt\" or \"ada\" but got \"" + args[2] + "\"");
+                        throw new LabException.BadArgs("Unknown learning-type, expected \"dt\" or \"ada\" but got \"" + args[3] + "\"");
 
                     train(loadData(args[1]), args[2], args[3]);
 
@@ -73,7 +73,7 @@ public class lab3 {
                 case "predict" -> {
                     // correct arg count
                     if (args.length != 3)
-                        throw new Exception("Expected 2 arguments but got " + (args.length - 1));   // -1 for keyword
+                        throw new LabException.BadArgs("Expected 2 arguments but got " + (args.length - 1));   // -1 for keyword
 
                     // check if valid file
                     assertFileExists(args[1]);
@@ -83,16 +83,20 @@ public class lab3 {
 
                     predict(args[1], args[2]);
                 }
-                default -> throw new Exception("Unknown keyword, expected \"train\" or \"predict\" but got \"" + args[0] + "\"");
+                default -> throw new LabException.BadArgs("Unknown keyword, expected \"train\" or \"predict\" but got \"" + args[0] + "\"");
             }
-        } catch (Exception e){
+        } catch (LabException.BadArgs e){
             // print error and break
-            System.err.println("Error: " + e.getLocalizedMessage());
+            System.err.println("BadArgsError: " + e.getLocalizedMessage());
             System.err.println("Expected Usage: java lab3 train <examples> <hypothesisOut> <learning-type>");
             System.err.println("Expected Usage: java lab3 predict <hypothesis> <file>");
-            return;
-        }
 
+        } catch (LabException.BadDatFile e){
+            System.err.println("BadDatFile Error: " + e.getLocalizedMessage());
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }

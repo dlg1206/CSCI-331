@@ -13,7 +13,7 @@ public class Data {
     private final String fragment;
 
 
-    public Data(String fragment) throws Exception {
+    public Data(String fragment) throws LabException.BadDatFile {
 
         String[] components = fragment.split("\\|");
 
@@ -21,7 +21,7 @@ public class Data {
             switch (components[0]){
                 case "en" -> this.trainingLang = Language.EN;
                 case "nl" -> this.trainingLang = Language.NL;
-                default -> throw new Exception("Unknown language, expected \"en\" or \"nl\" but got \"" + components[0] +"\"");
+                default -> throw new LabException.BadDatFile("Unknown language prefix, expected \"en\" or \"nl\" but got \"" + components[0] +"\"");
             }
             this.fragment = components[1];
         } else {
