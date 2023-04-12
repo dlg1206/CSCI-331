@@ -8,48 +8,56 @@ import java.util.Set;
 
 public abstract class FeatureTest {
 
-    protected static double log2(double n){
+    protected Set<Data> isEN;
+    protected Set<Data> isNotEN;
+    protected double numENCorrect;    // number of correctly identified EN phrases
+    protected double numENIncorrect;  // number of incorrectly identified EN phrases
+
+    private double log2(double n){
         return Math.log(n) / Math.log(2);
     }
 
     // B function
-    protected double B(double q){
+    private double B(double q){
         if(q == 0)
             return 0;
         return -(q * log2(q) + (1 - q) * log2(1 - q));
     }
 
     // perform remainder calc for booleans
-    public abstract double getRemainder(List<Data> dataList);
+    public double getRemainder(List<Data> dataList){
+        // reset any stored values
+        this.isEN = new HashSet<>();
+        this.isNotEN = new HashSet<>();
+        this.numENCorrect = 0;
+        this.numENIncorrect = 0;
+
+        for(Data d : dataList){
+            applyTest(d);
+        }
+        // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
+        double remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
+                ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect / this.isNotEN.size());
+
+        return remainder;
+    }
+
+    protected abstract void applyTest(Data data);
 
 }
 
 class FeatureFreqT extends FeatureTest{
 
-
-
     @Override
-    public double getRemainder(List<Data> dataList) {
-        Set<Data> isTrue = new HashSet<>();
-        Set<Data> isFalse = new HashSet<>();
-        double numEnT = 0;
-        double numEnF = 0;
-        for(Data d : dataList){
-            if(d.getCountIndex('t') ==2 ){
-                isTrue.add(d);
-                if(d.matchLanguage(Data.Language.EN))
-                    numEnT++;
-            } else {
-                isFalse.add(d);
-                if(d.matchLanguage(Data.Language.EN))
-                    numEnF++;
-            }
+    protected void applyTest(Data data) {
+        if(data.getCountIndex('t') ==2 ){
+            this.isEN.add(data);
+            if(data.matchLanguage(Data.Language.EN))
+                this.numENCorrect++;
+        } else {
+            this.isNotEN.add(data);
+            if(data.matchLanguage(Data.Language.EN))
+                this.numENIncorrect++;
         }
-
-        // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-        double remainder = ((double) isTrue.size() / dataList.size()) * B(numEnT / isTrue.size()) +
-                ((double) isFalse.size() / dataList.size()) * B(numEnF / isFalse.size());
-
-        return remainder;
     }
 }
