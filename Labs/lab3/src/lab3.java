@@ -35,7 +35,18 @@ public class lab3 {
         return dataList;
     }
 
+    public static void train(List<Data> examples, String hypothesisOut, String learningType){
+        /*
+        features
+        1. # e's > 15% word, T:nl, F:en, approx 17/13 respectively
+        2. # highest number percent is "t", T:en F:nl
+        3. # highest number percent is "n", T:nl F:en
+        4. en articles (the, an, a)
+        5. nl articles (see list)
+         */
 
+//        getRemainder(examples);
+    }
 
     public static void predict(String hypothesis, String file){
 
@@ -64,7 +75,7 @@ public class lab3 {
                     if (!args[3].equals("dt") && !args[3].equals("ada"))
                         throw new LabException.BadArgs("Unknown learning-type, expected \"dt\" or \"ada\" but got \"" + args[3] + "\"");
 
-                    Train.train(loadData(args[1]), args[2], args[3]);
+                    train(loadData(args[1]), args[2], args[3]);
 
                 }
 
