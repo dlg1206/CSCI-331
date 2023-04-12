@@ -38,7 +38,15 @@ public class lab3 {
         return null;
     }
 
-    public static void train(List<Data> examples, String hypothesisOut, String learningType){
+    public static void train(String examples, String hypothesisOut, String learningType){
+        List<Data> dataList;
+        try{
+            dataList = loadData(examples);
+        } catch (Exception e){
+            System.err.println("Failed to load .dat file | Msg: " + e.getMessage());
+            return;
+        }
+
         List<Feature> tests = new ArrayList<>(){
             {
                 add(new tCount());
@@ -57,7 +65,7 @@ public class lab3 {
         5. nl articles (see list)
          */
         for(Feature t : tests){
-            System.out.println("R: " + t.getRemainder(examples));
+            System.out.println("R: " + t.getRemainder(dataList));
         }
     }
 
@@ -65,7 +73,7 @@ public class lab3 {
 
     }
 
-    public static void main(String[] args) {
+    private static boolean validArgs(String[] args){
 
         // validate args
         try{
@@ -87,9 +95,6 @@ public class lab3 {
                     // allowed learning type
                     if (!args[3].equals("dt") && !args[3].equals("ada"))
                         throw new LabException.BadArgs("Unknown learning-type, expected \"dt\" or \"ada\" but got \"" + args[3] + "\"");
-
-                    train(loadData(args[1]), args[2], args[3]);
-
                 }
 
                 case "predict" -> {
@@ -102,8 +107,6 @@ public class lab3 {
 
                     // assert sentence frags exist
                     assertFileExists(args[2]);
-
-                    predict(args[1], args[2]);
                 }
                 default -> throw new LabException.BadArgs("Unknown keyword, expected \"train\" or \"predict\" but got \"" + args[0] + "\"");
             }
@@ -112,13 +115,25 @@ public class lab3 {
             System.err.println("BadArgsError: " + e.getLocalizedMessage());
             System.err.println("Expected Usage: java lab3 train <examples> <hypothesisOut> <learning-type>");
             System.err.println("Expected Usage: java lab3 predict <hypothesis> <file>");
-
-        } catch (LabException.BadDatFile e){
-            System.err.println("BadDatFile Error: " + e.getLocalizedMessage());
-            return;
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+
+        // args ok
+        return true;
+    }
+
+    public static void main(String[] args) {
+        if(!validArgs(args))
+            return;
+
+        switch (args[0]){
+            case "train" ->     train(args[1], args[2], args[3]);
+            case "predict" ->   predict(args[1], args[2]);
+        }
+
 
 
     }
