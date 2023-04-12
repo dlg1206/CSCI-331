@@ -1,16 +1,17 @@
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * @author Derek Garcia
  **/
 
-public class Data {
+public class Data implements Serializable {
 
     public enum Language {
         EN,
         NL
     }
-    private class Letter implements Comparable<Letter>{
+    private class Letter implements Comparable<Letter>, Serializable{
         private char value;
         private double occurrences = 0;
         public Letter(char c){

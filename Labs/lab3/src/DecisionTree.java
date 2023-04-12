@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -5,14 +6,13 @@ import java.util.Set;
 
 public class DecisionTree {
 
-    private Node root;
-
-    private class Node {
+    public static class Node implements Serializable {
         private final Node parent;
         private Node left;
         private Node right;
 
         private final List<Data> data;
+        private String msg;
 
 
         public Node(Node parent, List<Data> data){
@@ -26,10 +26,19 @@ public class DecisionTree {
         public void setRight(Node right){
             this.right = right;
         }
+
+        public void setMsg(String msg){
+            this.msg = msg;
+        }
+
+        @Override
+        public String toString() {
+            return this.msg;
+        }
     }
 
 
-    private Node trainRecursive(Node parent, List<Data> examples, List<Feature> features){
+    public static Node trainRecursive(Node parent, List<Data> examples, List<Feature> features){
 
         // Base case: Only 1 example or run out of features
         if(examples.size() == 1 || features.isEmpty())
@@ -40,6 +49,9 @@ public class DecisionTree {
         }
         Collections.sort(features);
         Feature target = features.remove(0);
+        if(parent != null)
+            parent.setMsg(target.toString());
+
         Node curNode = new Node(parent, examples);
         // recurse left
         curNode.setLeft(trainRecursive(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
@@ -49,8 +61,25 @@ public class DecisionTree {
 
         return curNode;
     }
-    public DecisionTree(List<Data> examples, List<Feature> features) {
-        this.root = trainRecursive(null, examples, features);
+
+    public static void serializeNode(Node node, String filepath) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(node);
+            out.flush();
+
+            try (FileOutputStream outputStream = new FileOutputStream(filepath)) {
+                outputStream.write(bos.toByteArray());
+            }
+        }
+        // ignore close exception
     }
 
+//    public static Node deSerializeNode(Node node, String filepath) throws IOException {
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        ObjectOutputStream oos = new ObjectOutputStream(bos);
+//        oos.writeObject(node);
+//        oos.flush();
+//        byte [] data = bos.toByteArray();
+//    }
 }

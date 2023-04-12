@@ -57,7 +57,13 @@ public class lab3 {
             }
         };
 
-        DecisionTree dt = new DecisionTree(dataList, features);
+        DecisionTree.Node dtRoot = DecisionTree.trainRecursive(null, new ArrayList<>(dataList), new ArrayList<>(features));
+        try{
+            DecisionTree.serializeNode(dtRoot, hypothesisOut);
+        } catch (Exception e){
+//            System.err.println(e.getMessage());
+        e.printStackTrace();
+        }
     }
 
     public static void predict(String hypothesis, String file){
