@@ -1,4 +1,6 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,11 +77,11 @@ public class DecisionTree {
         // ignore close exception
     }
 
-//    public static Node deSerializeNode(Node node, String filepath) throws IOException {
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        ObjectOutputStream oos = new ObjectOutputStream(bos);
-//        oos.writeObject(node);
-//        oos.flush();
-//        byte [] data = bos.toByteArray();
-//    }
+    public static Node deSerializeNode(String filepath) throws IOException, ClassNotFoundException {
+        byte[] nodeData = Files.readAllBytes(Paths.get(filepath));
+        ByteArrayInputStream bin = new ByteArrayInputStream(nodeData);
+        ObjectInputStream oin = new ObjectInputStream(bin);
+        return (Node) oin.readObject();
+
+    }
 }

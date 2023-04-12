@@ -60,6 +60,7 @@ public class lab3 {
         DecisionTree.Node dtRoot = DecisionTree.trainRecursive(null, new ArrayList<>(dataList), new ArrayList<>(features));
         try{
             DecisionTree.serializeNode(dtRoot, hypothesisOut);
+            DecisionTree.Node root = DecisionTree.deSerializeNode(hypothesisOut);
         } catch (Exception e){
 //            System.err.println(e.getMessage());
         e.printStackTrace();
