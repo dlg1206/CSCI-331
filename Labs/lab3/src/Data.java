@@ -48,7 +48,7 @@ public class Data {
     }
 
     private Language trainingLang;
-    private final List<Letter> letters;
+    private final LinkedHashMap<Character, Double> letters;
     private final LinkedHashSet<String> words;
     private double numChars = 0;
 
@@ -70,26 +70,38 @@ public class Data {
         HashMap<Character, Letter> tmp = new HashMap<>();
         for(String word : this.words){
             for(char c : word.toLowerCase().toCharArray()){
+                if((c < 'a' || c > 'z'))
+                    continue;
                 if(!tmp.containsKey(c))
                     tmp.put(c, new Letter(c));
                 tmp.get(c).increment();
                 this.numChars++;
             }
         }
-        this.letters = new ArrayList<>(tmp.values());
-        Collections.sort(this.letters);
+        ArrayList<Letter> sorted = new ArrayList<>(tmp.values());
+        Collections.sort(sorted);
+        this.letters = new LinkedHashMap<>();
+        for(Letter l : sorted){
+            this.letters.put(l.value, l.occurrences);
+        }
     }
 
-    public double getFrequency(char c) {
-        if (!this.letters.contains(c))
+//    public double getFrequency(char c) {
+//        if (!this.letters.contains(c))
+//            return 0;
+//        int index = this.letters.indexOf(c);
+//
+//        return this.letters.get(index).occurrences / this.numChars;
+//    }
+
+    public double getCountIndex(char c) {
+        if (this.letters.get(c) == null)
             return 0;
-        int index = this.letters.indexOf(c);
-
-        return this.letters.get(index).occurrences / this.numChars;
+        return this.letters.get(c);
     }
 
-    public char getMostCommonChar() {
-        return this.letters.get(0).value;
+    public boolean matchLanguage(Language l) {
+        return this.trainingLang == l;
     }
 
     @Override

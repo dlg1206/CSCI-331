@@ -20,32 +20,31 @@ public class Train {
     }
 
 
-//    // perform remainder calc for booleans
-//    private static double getRemainder(int i, List<Class> classList){
-//        Set<Class> isTrue = new HashSet<>();
-//        Set<Class> isFalse = new HashSet<>();
-//        double numAT = 0;
-//        double numAF = 0;
-//        for(Class c : classList){
-//            if(c.attributes[i]){
-//                isTrue.add(c);
-//                if(c.value.equals("A"))
-//                    numAT++;
-//            } else {
-//                isFalse.add(c);
-//                if(c.value.equals("A"))
-//                    numAF++;
-//            }
-//        }
-//
-//        // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-//        double remainder = ((double) isTrue.size() / classList.size()) * B(numAT / isTrue.size()) +
-//                ((double) isFalse.size() / classList.size()) * B(numAF / isFalse.size());
-//
-//        System.out.println("Remainder(" + i + "): " + remainder);
-//        return remainder;
-//
-//    }
+    // perform remainder calc for booleans
+    private static double getRemainder(List<Data> dataList){
+        Set<Data> isTrue = new HashSet<>();
+        Set<Data> isFalse = new HashSet<>();
+        double numEnT = 0;
+        double numEnF = 0;
+        for(Data d : dataList){
+            if(d.getCountIndex('t') ==2 ){
+                isTrue.add(d);
+                if(d.matchLanguage(Data.Language.EN))
+                    numEnT++;
+            } else {
+                isFalse.add(d);
+                if(d.matchLanguage(Data.Language.EN))
+                    numEnF++;
+            }
+        }
+
+        // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
+        double remainder = ((double) isTrue.size() / dataList.size()) * B(numEnT / isTrue.size()) +
+                ((double) isFalse.size() / dataList.size()) * B(numEnF / isFalse.size());
+
+        return remainder;
+
+    }
 
     public static void train(List<Data> examples, String hypothesisOut, String learningType){
         /*
@@ -57,6 +56,6 @@ public class Train {
         5. nl articles (see list)
          */
 
-
+        getRemainder(examples);
     }
 }
