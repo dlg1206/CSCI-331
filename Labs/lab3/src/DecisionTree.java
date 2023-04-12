@@ -74,7 +74,7 @@ public class DecisionTree {
                 outputStream.write(bos.toByteArray());
             }
         }
-        // ignore close exception
+        System.out.println("DecisionTree written to file \"" + filepath + "\"");
     }
 
     public static Node deSerializeNode(String filepath) throws IOException, ClassNotFoundException {
