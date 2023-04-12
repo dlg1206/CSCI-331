@@ -44,14 +44,17 @@ public abstract class FeatureTest {
             }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-        double remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
+        return ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
                 ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect / this.isNotEN.size());
-
-        return remainder;
     }
 
     protected abstract boolean isEnglish(Data data);
+    protected abstract String getTestName();
 
+    @Override
+    public String toString() {
+        return getTestName();
+    }
 }
 
 class FeatureFreqT extends FeatureTest{
@@ -59,5 +62,10 @@ class FeatureFreqT extends FeatureTest{
     @Override
     protected boolean isEnglish(Data data) {
         return data.getCountIndex('t') == 2;
+    }
+
+    @Override
+    protected String getTestName() {
+        return "'t' is 2nd most common letter";
     }
 }

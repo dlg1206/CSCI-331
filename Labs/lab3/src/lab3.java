@@ -36,6 +36,11 @@ public class lab3 {
     }
 
     public static void train(List<Data> examples, String hypothesisOut, String learningType){
+        List<FeatureTest> tests = new ArrayList<>(){
+            {
+                add(new FeatureFreqT());
+            }
+        };
         /*
         features
         1. # e's > 15% word, T:nl, F:en, approx 17/13 respectively
@@ -44,10 +49,9 @@ public class lab3 {
         4. en articles (the, an, a)
         5. nl articles (see list)
          */
-
-        var foo = new FeatureFreqT();
-        foo.getRemainder(examples);
-//        getRemainder(examples);
+        for(FeatureTest t : tests){
+            System.out.print(t.toString() + ": " + t.getRemainder(examples));
+        }
     }
 
     public static void predict(String hypothesis, String file){
