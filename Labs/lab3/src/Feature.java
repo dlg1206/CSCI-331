@@ -7,12 +7,13 @@ import java.util.Set;
  * @author Derek Garcia
  **/
 
-public abstract class Feature {
+public abstract class Feature implements Comparable<Feature>{
 
     protected Set<Data> isEN;
     protected Set<Data> isNotEN;
     protected double numENCorrect;    // number of correctly identified EN phrases
     protected double numENIncorrect;  // number of incorrectly identified EN phrases
+    private double remainder = -1;
 
     private double log2(double n){
         if(n == 0)
@@ -32,7 +33,7 @@ public abstract class Feature {
     }
 
     // perform remainder calc for booleans
-    public double getRemainder(List<Data> dataList){
+    public void getRemainder(List<Data> dataList){
         // reset any stored values
         this.isEN = new HashSet<>();
         this.isNotEN = new HashSet<>();
@@ -51,15 +52,24 @@ public abstract class Feature {
             }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-
-        double remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect, this.isEN.size()) +
+        this.remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect, this.isEN.size()) +
                 ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect, this.isNotEN.size());
-        return remainder;
+    }
 
+    public Set<Data> getIsEN(){
+        return this.isEN;
+    }
+    public Set<Data> getIsNotEN(){
+        return this.isNotEN;
     }
 
     protected abstract boolean isEnglish(Data data);
     protected abstract String getTestName();
+
+    @Override
+    public int compareTo(Feature o) {
+        return (int) (1000 * this.remainder - 1000 * o.remainder);
+    }
 
     @Override
     public String toString() {

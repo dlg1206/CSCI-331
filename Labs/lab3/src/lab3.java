@@ -47,7 +47,7 @@ public class lab3 {
             return;
         }
 
-        List<Feature> tests = new ArrayList<>(){
+        List<Feature> features = new ArrayList<>(){
             {
                 add(new tCount());
                 add(new nCount());
@@ -56,17 +56,8 @@ public class lab3 {
                 add(new FreqE());
             }
         };
-        /*
-        features
-        1. # e's > 15% word, T:nl, F:en, approx 17/13 respectively
-        2. # highest number percent is "t", T:en F:nl
-        3. # highest number percent is "n", T:nl F:en
-        4. en articles (the, an, a)
-        5. nl articles (see list)
-         */
-        for(Feature t : tests){
-            System.out.println("R: " + t.getRemainder(dataList));
-        }
+
+        DecisionTree dt = new DecisionTree(dataList, features);
     }
 
     public static void predict(String hypothesis, String file){
