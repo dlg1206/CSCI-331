@@ -34,12 +34,12 @@ public class lab3 {
         return dataList;
     }
 
-    public List<FeatureTest> trainRecursive(List<FeatureTest> tests, List<Data> examples){
+    public List<Feature> trainRecursive(List<Feature> tests, List<Data> examples){
         return null;
     }
 
     public static void train(List<Data> examples, String hypothesisOut, String learningType){
-        List<FeatureTest> tests = new ArrayList<>(){
+        List<Feature> tests = new ArrayList<>(){
             {
                 add(new tCount());
                 add(new nCount());
@@ -56,7 +56,7 @@ public class lab3 {
         4. en articles (the, an, a)
         5. nl articles (see list)
          */
-        for(FeatureTest t : tests){
+        for(Feature t : tests){
             System.out.println("R: " + t.getRemainder(examples));
         }
     }

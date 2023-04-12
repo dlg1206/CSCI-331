@@ -7,7 +7,7 @@ import java.util.Set;
  * @author Derek Garcia
  **/
 
-public abstract class FeatureTest {
+public abstract class Feature {
 
     protected Set<Data> isEN;
     protected Set<Data> isNotEN;
@@ -15,12 +15,19 @@ public abstract class FeatureTest {
     protected double numENIncorrect;  // number of incorrectly identified EN phrases
 
     private double log2(double n){
+        if(n == 0)
+            return 0;
         return Math.log(n) / Math.log(2);
     }
 
     // B function
-    private double B(double q){
+    private double B(double part, double whole){
 
+        // short circuit checks
+        // B(1/0) = 0 and B(1) = 0
+        if(whole == 0 || (part / whole == 1))
+            return 0;
+        double q = part / whole;
         return -(q * log2(q) + (1 - q) * log2(1 - q));
     }
 
@@ -44,13 +51,11 @@ public abstract class FeatureTest {
             }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-        try{
-            return ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
-                    ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect / this.isNotEN.size());
-        } catch (Exception e){
-            // math error, most like log2(0) or divide by 0
-            return 0;
-        }
+
+        double remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect, this.isEN.size()) +
+                ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect, this.isNotEN.size());
+        return remainder;
+
     }
 
     protected abstract boolean isEnglish(Data data);
@@ -61,7 +66,7 @@ public abstract class FeatureTest {
         return getTestName();
     }
 }
-class FreqE extends FeatureTest{
+class FreqE extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
@@ -74,7 +79,7 @@ class FreqE extends FeatureTest{
     }
 }
 
-class tCount extends FeatureTest{
+class tCount extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
@@ -87,7 +92,7 @@ class tCount extends FeatureTest{
     }
 }
 
-class nCount extends FeatureTest{
+class nCount extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
@@ -100,7 +105,7 @@ class nCount extends FeatureTest{
     }
 }
 
-class enArticles extends FeatureTest {
+class enArticles extends Feature {
     private final List<String> articles = new ArrayList<>() {
         {
             add("the");
@@ -122,7 +127,7 @@ class enArticles extends FeatureTest {
     }
 }
 
-class nlArticles extends FeatureTest {
+class nlArticles extends Feature {
 
     private final List<String> articles = new ArrayList<>() {
         {
