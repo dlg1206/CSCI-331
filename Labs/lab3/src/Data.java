@@ -50,9 +50,9 @@ public class Data {
                 case "nl" -> this.trainingLang = Language.NL;
                 default -> throw new LabException.BadDatFile("Unknown language prefix, expected \"en\" or \"nl\" but got \"" + components[0] +"\"");
             }
-            this.words = new LinkedHashSet<>(List.of(components[1].split(" ")));
+            this.words = new LinkedHashSet<>(List.of(components[1].toLowerCase().split(" ")));
         } else {
-            this.words = new LinkedHashSet<>(List.of(fragment.split(" ")));
+            this.words = new LinkedHashSet<>(List.of(fragment.toLowerCase().split(" ")));
         }
 
         HashMap<Character, Letter> tmp = new HashMap<>();
@@ -85,6 +85,10 @@ public class Data {
                 return i + 1;
         }
         return -1;
+    }
+
+    public boolean containsWord(String word){
+        return this.words.contains(word);
     }
 
     public boolean matchLanguage(Language l) {

@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +37,11 @@ public class lab3 {
     public static void train(List<Data> examples, String hypothesisOut, String learningType){
         List<FeatureTest> tests = new ArrayList<>(){
             {
-                add(new FeatureFreqT());
+                add(new tCount());
+                add(new nCount());
+                add(new enArticles());
+                add(new nlArticles());
+                add(new FreqE());
             }
         };
         /*
@@ -50,7 +53,7 @@ public class lab3 {
         5. nl articles (see list)
          */
         for(FeatureTest t : tests){
-            System.out.print(t.toString() + ": " + t.getRemainder(examples));
+            System.out.println("R: " + t.getRemainder(examples));
         }
     }
 
