@@ -33,7 +33,15 @@ public abstract class FeatureTest {
         this.numENIncorrect = 0;
 
         for(Data d : dataList){
-            applyTest(d);
+            if( isEnglish(d) ){
+                this.isEN.add(d);
+                if(d.matchLanguage(Data.Language.EN))
+                    this.numENCorrect++;
+            } else {
+                this.isNotEN.add(d);
+                if(d.matchLanguage(Data.Language.EN))
+                    this.numENIncorrect++;
+            }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
         double remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
@@ -42,22 +50,14 @@ public abstract class FeatureTest {
         return remainder;
     }
 
-    protected abstract void applyTest(Data data);
+    protected abstract boolean isEnglish(Data data);
 
 }
 
 class FeatureFreqT extends FeatureTest{
 
     @Override
-    protected void applyTest(Data data) {
-        if(data.getCountIndex('t') ==2 ){
-            this.isEN.add(data);
-            if(data.matchLanguage(Data.Language.EN))
-                this.numENCorrect++;
-        } else {
-            this.isNotEN.add(data);
-            if(data.matchLanguage(Data.Language.EN))
-                this.numENIncorrect++;
-        }
+    protected boolean isEnglish(Data data) {
+        return data.getCountIndex('t') == 2;
     }
 }
