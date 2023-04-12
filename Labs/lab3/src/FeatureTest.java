@@ -15,8 +15,6 @@ public abstract class FeatureTest {
     protected double numENIncorrect;  // number of incorrectly identified EN phrases
 
     private double log2(double n){
-        if(n == 0)
-            return 0;
         return Math.log(n) / Math.log(2);
     }
 
@@ -46,16 +44,13 @@ public abstract class FeatureTest {
             }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
-        // (numTrue / total)
-        double a = ((double) this.isEN.size() / dataList.size());
-        // B(numA / numTrue)
-        double b = B(this.numENCorrect / this.isEN.size());
-        // (numFalse / total)
-        double c = ((double) this.isNotEN.size() / dataList.size());
-        // B(numNotA / numFalse)
-        double e = B(this.numENIncorrect / this.isNotEN.size());
-        return ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
-                ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect / this.isNotEN.size());
+        try{
+            return ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect / this.isEN.size()) +
+                    ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect / this.isNotEN.size());
+        } catch (Exception e){
+            // math error, most like log2(0) or divide by 0
+            return 0;
+        }
     }
 
     protected abstract boolean isEnglish(Data data);
@@ -110,7 +105,6 @@ class enArticles extends FeatureTest {
         {
             add("the");
             add("an");
-            add("a");
         }
     };
 

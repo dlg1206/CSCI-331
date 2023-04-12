@@ -34,6 +34,10 @@ public class lab3 {
         return dataList;
     }
 
+    public List<FeatureTest> trainRecursive(List<FeatureTest> tests, List<Data> examples){
+        return null;
+    }
+
     public static void train(List<Data> examples, String hypothesisOut, String learningType){
         List<FeatureTest> tests = new ArrayList<>(){
             {
