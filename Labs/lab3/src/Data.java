@@ -23,8 +23,6 @@ public class Data {
             return this.occurrences;
         }
 
-
-
         @Override
         public String toString() {
             return this.value + ":" + (int) this.occurrences;
@@ -35,20 +33,10 @@ public class Data {
             return (int) (o.occurrences - this.occurrences);
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            if(obj instanceof Letter other){
-                return this.value == other.value;
-            }
-            if(obj instanceof Character other){
-                return this.value == other;
-            }
-            return false;
-        }
     }
 
     private Language trainingLang;
-    private final LinkedHashMap<Character, Double> letters;
+    private final List<Letter> letters;
     private final LinkedHashSet<String> words;
     private double numChars = 0;
 
@@ -80,24 +68,23 @@ public class Data {
         }
         ArrayList<Letter> sorted = new ArrayList<>(tmp.values());
         Collections.sort(sorted);
-        this.letters = new LinkedHashMap<>();
-        for(Letter l : sorted){
-            this.letters.put(l.value, l.occurrences);
-        }
+        this.letters = new ArrayList<>(sorted);
     }
 
-//    public double getFrequency(char c) {
-//        if (!this.letters.contains(c))
-//            return 0;
-//        int index = this.letters.indexOf(c);
-//
-//        return this.letters.get(index).occurrences / this.numChars;
-//    }
-
-    public double getCountIndex(char c) {
-        if (this.letters.get(c) == null)
+    public double getFrequency(char c) {
+        int index = getCountIndex(c);
+        if (index == -1)
             return 0;
-        return this.letters.get(c);
+
+        return this.letters.get(index).occurrences / this.numChars;
+    }
+
+    public int getCountIndex(char c) {
+        for(int i = 0; i < this.letters.size(); i++){
+            if(this.letters.get(i).value == c)
+                return i + 1;
+        }
+        return -1;
     }
 
     public boolean matchLanguage(Language l) {

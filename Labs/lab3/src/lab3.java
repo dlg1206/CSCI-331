@@ -45,6 +45,8 @@ public class lab3 {
         5. nl articles (see list)
          */
 
+        var foo = new FeatureFreqT();
+        foo.getRemainder(examples);
 //        getRemainder(examples);
     }
 
