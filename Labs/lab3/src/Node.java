@@ -8,18 +8,18 @@ import java.util.List;
 
 public class Node implements Serializable {
     private final Node parent;
-    private Node left;
-    private Node right;
+    private Node lIsEn;
+    private Node rIsNl;
 
     private final List<Data> data;
     private String msg;
 
 
-    public void setLeft(Node left) {
-        this.left = left;
+    public void setLIsEn(Node left) {
+        this.lIsEn = left;
     }
-    public void setRight(Node right){
-        this.right = right;
+    public void setRIsNl(Node right){
+        this.rIsNl = right;
     }
 
     public void setMsg(String msg){
@@ -47,12 +47,19 @@ public class Node implements Serializable {
 
         Node curNode = new Node(parent, examples);
         // recurse left
-        curNode.setLeft(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
+        curNode.setLIsEn(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
 
         // recurse right
-        curNode.setRight(buildTree(curNode, new ArrayList<>(target.getIsNotEN()), new ArrayList<>(features)));
+        curNode.setRIsNl(buildTree(curNode, new ArrayList<>(target.getIsNotEN()), new ArrayList<>(features)));
 
         return curNode;
+    }
+
+    private double getNumWrong(){
+        double thisWrong;
+//        if(this.parent == null)
+
+        return 0;
     }
 
     public void adaBoost(){
@@ -61,12 +68,12 @@ public class Node implements Serializable {
 
 
         // recurse left
-        if(this.left != null)
-            this.left.adaBoost();
+        if(this.lIsEn != null)
+            this.lIsEn.adaBoost();
 
         // recurse right
-        if(this.right != null)
-            this.right.adaBoost();
+        if(this.rIsNl != null)
+            this.rIsNl.adaBoost();
 
 
 
