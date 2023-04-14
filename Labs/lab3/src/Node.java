@@ -49,7 +49,7 @@ public class Node implements Serializable {
         // recurse left if data
         if(target.getIsEN().size() != 0)
             curNode.setLIsEn(buildTree(
-                    new Node(parent, examples, target.toString()),
+                    curNode,
                     new ArrayList<>(target.getIsEN()),
                     new ArrayList<>(features))
             );
@@ -57,7 +57,7 @@ public class Node implements Serializable {
         // recurse right if data
         if(target.getIsNL().size() != 0)
             curNode.setRIsNl(buildTree(
-                    new Node(parent, examples, target.toString()),
+                    curNode,
                     new ArrayList<>(target.getIsNL()),
                     new ArrayList<>(features))
             );
@@ -70,18 +70,16 @@ public class Node implements Serializable {
 
     // lang that shouldn't be in there
     private double getError(Data.Language expected){
-        double enError = 0;
+        double enError;
         double nlError = 0;
 
         // base case, reach leaf
         if(this.lIsEn == null || this.rIsNl == null){
            double error = 0;
            for(Data d : this.data){
-//               if(!d.matchLanguage(expected))
-//                   error += d.getWeight();
-               System.err.println(d);
-               error += d.getWeight();  // todo weight tied to node not data?
-               d.updateWeight(-1);
+               if(!d.matchLanguage(expected))
+                   error += d.getWeight();
+
            }
            return error;
         }
@@ -123,34 +121,8 @@ public class Node implements Serializable {
         return enWeight + nlWeight;
     }
 
-    private void walk(String path) {
-        double weight = 0;
-        for(Data d : this.data){
-            weight += d.getWeight();
-        }
-
-        if (this.lIsEn == null || this.rIsNl == null) {
-
-            System.out.println(path + this + " : " + weight);
-            return;
-        }
-        path += this.toString();
-
-        // check IsEnglish Dataset for the number of NL phrases
-        if (this.lIsEn != null)
-            this.lIsEn.walk(path + "L-[" + weight + "] -> ");
-        else
-            System.out.println(path + "L-[" + weight + "]");
-
-        // check IsDutch Dataset for the number of EN phrases
-        if (this.rIsNl != null)
-            this.rIsNl.walk(path + "R-[" + weight + "] -> ");
-        else
-            System.out.println(path + "R-[" + weight + "]");
-    }
 
     public void adaBoost(){
-        walk("");
 
         double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
         double update = error / (1 - error);
