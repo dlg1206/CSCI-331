@@ -85,7 +85,7 @@ public class lab3 {
         };
 
         // both dt and ada need tree, build
-        Node dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
+        Node dtRoot = Node.buildTree(new ArrayList<>(dataList), new ArrayList<>(features));
 
         // adaboost if given
         if(learningType.equals("ada")){

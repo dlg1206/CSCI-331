@@ -5,48 +5,72 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * file: Node.java
+ * Node in the decision tree
+ *
+ * @author Derek Garcia
+ */
 public class Node implements Serializable {
-    private final Node parentNode;
-    private Node lIsEn;
-    private Node rIsNl;
+    private Node lIsEn;     // left-isEnglish
+    private Node rIsNl;     // right-isDutch
 
+    // Values
     private final List<Data> data;
-    private Feature feature;
+    private final Feature feature;
 
 
-    public void setLIsEn(Node left) {
-        this.lIsEn = left;
-    }
-    public void setRIsNl(Node right){
-        this.rIsNl = right;
-    }
-
-
-    private Node(Node parent, List<Data> data, Feature feature){
-        this.parentNode = parent;
+    /**
+     * Private Node Constructor, used for building tree
+     *
+     * @param data data associated with this node
+     * @param feature feature that this node tested
+     */
+    private Node(List<Data> data, Feature feature){
         this.data = data;
         this.feature = feature;
     }
 
-    public static Node buildTree(Node parent, List<Data> examples, List<Feature> features){
+    /**
+     * Set Left child
+     * @param left left node
+     */
+    public void setLIsEn(Node left) {
+        this.lIsEn = left;
+    }
+
+    /**
+     * Set right child
+     * @param right right node
+     */
+    public void setRIsNl(Node right){
+        this.rIsNl = right;
+    }
+
+    /**
+     * Build a Decision Tree
+     *
+     * @param examples List of data to test
+     * @param features List of features to test data on
+     * @return Root Decision Tree node
+     */
+    public static Node buildTree(List<Data> examples, List<Feature> features){
 
         // Base case: Only 1 example or run out of features
         if(examples.size() == 1 || features.isEmpty())
             return null;
 
+        // Find lowest remainder
         for(Feature f: features){
             f.getRemainder(examples);
         }
         Collections.sort(features);
         Feature target = features.remove(0);
 
-        Node curNode = new Node(parent, examples, target);
-
+        Node curNode = new Node(examples, target);  // make new node
         // recurse left if data
         if(target.getIsEN().size() != 0)
             curNode.setLIsEn(buildTree(
-                    curNode,
                     new ArrayList<>(target.getIsEN()),
                     new ArrayList<>(features))
             );
@@ -54,19 +78,25 @@ public class Node implements Serializable {
         // recurse right if data
         if(target.getIsNL().size() != 0)
             curNode.setRIsNl(buildTree(
-                    curNode,
                     new ArrayList<>(target.getIsNL()),
                     new ArrayList<>(features))
             );
-
         return curNode;
     }
 
+    /**
+     * Predict the data language todo done correct?
+     *
+     * @param data Data to predict
+     * @return en if English, nl if Dutch
+     */
     public String predict(Data data){
 
+        // Predict left if exists
         if(this.lIsEn != null)
             return this.lIsEn.predict(data);
 
+        // Predict right if exists
         if(this.rIsNl != null)
             return this.rIsNl.predict(data);
 
@@ -78,9 +108,12 @@ public class Node implements Serializable {
     }
 
 
-
-
-    // lang that shouldn't be in there
+    /**
+     * Calculate error of the decision tree
+     *
+     * @param expected Expected Language
+     * @return error
+     */
     private double getError(Data.Language expected){
         double enError;
         double nlError = 0;
@@ -89,11 +122,11 @@ public class Node implements Serializable {
         if(this.lIsEn == null || this.rIsNl == null){
            double error = 0;
            for(Data d : this.data){
+               // If doesn't match expected, update error and flag
                if(!d.matchLanguage(expected)){
                    error += d.getWeight();
                    d.flagError();
                }
-
            }
            return error;
         }
@@ -105,16 +138,21 @@ public class Node implements Serializable {
         if(this.rIsNl != null)
             nlError = this.rIsNl.getError(Data.Language.NL);
 
-
+        // return total error
         return enError + nlError;
     }
 
 
-
+    /**
+     * Perform adaBoost on this decision tree
+     */
     public void adaBoost(){
 
+        // Calculate update
         double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
         double update = error / (1 - error);
+
+        // Update weights
         double newWeight = 0;
         for(Data d : this.data){
             if(d.isCorrect())
@@ -122,20 +160,28 @@ public class Node implements Serializable {
             newWeight += d.getWeight();
         }
 
+        // Normalize weights
         double normalizeFactor = 1 / newWeight;
         for(Data d : this.data){
             d.updateWeight(normalizeFactor);
         }
-
     }
 
 
+    /**
+     * Serialize Node into object
+     *
+     * @param filepath output file path
+     * @throws IOException unable to write to file
+     */
     public void serialize(String filepath) throws IOException {
+        // Convert to byte array
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ObjectOutputStream out = new ObjectOutputStream(bos);
             out.writeObject(this);
             out.flush();
 
+            // write to file
             try (FileOutputStream outputStream = new FileOutputStream(filepath)) {
                 outputStream.write(bos.toByteArray());
             }
@@ -143,10 +189,21 @@ public class Node implements Serializable {
         System.out.println("DecisionTree written to file \"" + filepath + "\"");
     }
 
+    /**
+     * Deserialize node file into object
+     *
+     * @param filepath Node filepath
+     * @return Decision tree root node
+     * @throws IOException File is bad
+     * @throws ClassNotFoundException Node class not found
+     */
     public static Node deSerialize(String filepath) throws IOException, ClassNotFoundException {
+        // read in byte data
         byte[] nodeData = Files.readAllBytes(Paths.get(filepath));
         ByteArrayInputStream bin = new ByteArrayInputStream(nodeData);
         ObjectInputStream oin = new ObjectInputStream(bin);
+
+        // Cast new node
         return (Node) oin.readObject();
     }
 
