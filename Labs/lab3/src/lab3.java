@@ -82,7 +82,24 @@ public class lab3 {
     }
 
     public static void predict(String hypothesis, String file){
+        Node dtRoot;
+        List<Data> dataList;
+        try{
+            dataList = loadData(file);
+        } catch (Exception e){
+            System.err.println("Failed to load .dat file | Msg: " + e.getMessage());
+            return;
+        }
+        try{
+            dtRoot = Node.deSerialize(hypothesis);
+        } catch (Exception e){
+            System.err.println("Failed to load decision tree file | Msg: " + e.getMessage());
+            return;
+        }
 
+        for(Data d : dataList){
+            System.out.println(dtRoot.predict(d) + " : " + d);
+        }
     }
 
     private static boolean validArgs(String[] args){

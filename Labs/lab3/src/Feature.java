@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.Set;
  * @author Derek Garcia
  **/
 
-public abstract class Feature implements Comparable<Feature>{
+public abstract class Feature implements Comparable<Feature>, Serializable {
 
     protected Set<Data> isEN;
     protected Set<Data> isNL;

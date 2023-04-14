@@ -12,7 +12,7 @@ public class Node implements Serializable {
     private Node rIsNl;
 
     private final List<Data> data;
-    private String msg = "root";
+    private Feature feature;
 
 
     public void setLIsEn(Node left) {
@@ -22,14 +22,11 @@ public class Node implements Serializable {
         this.rIsNl = right;
     }
 
-    public void setMsg(String msg){
-        this.msg = msg;
-    }
 
-    private Node(Node parent, List<Data> data, String msg){
+    private Node(Node parent, List<Data> data, Feature feature){
         this.parentNode = parent;
         this.data = data;
-        this.msg = msg;
+        this.feature = feature;
     }
 
     public static Node buildTree(Node parent, List<Data> examples, List<Feature> features){
@@ -44,7 +41,7 @@ public class Node implements Serializable {
         Collections.sort(features);
         Feature target = features.remove(0);
 
-        Node curNode = new Node(parent, examples, target.toString());
+        Node curNode = new Node(parent, examples, target);
 
         // recurse left if data
         if(target.getIsEN().size() != 0)
@@ -63,6 +60,22 @@ public class Node implements Serializable {
             );
 
         return curNode;
+    }
+
+    public String predict(Data data){
+        boolean isEnglish = this.feature.isEnglish(data);
+
+        if(isEnglish && this.lIsEn != null)
+            return this.lIsEn.predict(data);
+
+        if(!isEnglish && this.rIsNl != null)
+            return this.rIsNl.predict(data);
+
+        // base case
+        if(isEnglish)
+            return "en";
+        else
+            return "nl";
     }
 
 
@@ -138,8 +151,5 @@ public class Node implements Serializable {
         return (Node) oin.readObject();
     }
 
-    @Override
-    public String toString() {
-        return this.msg;
-    }
+
 }
