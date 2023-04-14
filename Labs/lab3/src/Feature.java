@@ -81,7 +81,7 @@ class FreqE extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
-        return data.getFrequency('c') < 0.15;
+        return data.getFrequency('e') < 0.15;
     }
 
     @Override

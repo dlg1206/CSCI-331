@@ -63,16 +63,15 @@ public class Node implements Serializable {
     }
 
     public String predict(Data data){
-        boolean isEnglish = this.feature.isEnglish(data);
 
-        if(isEnglish && this.lIsEn != null)
+        if(this.lIsEn != null)
             return this.lIsEn.predict(data);
 
-        if(!isEnglish && this.rIsNl != null)
+        if(this.rIsNl != null)
             return this.rIsNl.predict(data);
 
         // base case
-        if(isEnglish)
+        if(this.feature.isEnglish(data))
             return "en";
         else
             return "nl";
