@@ -96,6 +96,15 @@ public class Data implements Serializable {
         return -1;
     }
 
+    public double getWeight() {
+        return this.weight;
+    }
+
+    public double updateWeight(double factor){
+        this.weight = this.weight * factor;
+        return this.weight;
+    }
+
     public boolean containsWord(String word){
         return this.words.contains(word);
     }

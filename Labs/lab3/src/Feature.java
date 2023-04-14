@@ -10,7 +10,7 @@ import java.util.Set;
 public abstract class Feature implements Comparable<Feature>{
 
     protected Set<Data> isEN;
-    protected Set<Data> isNotEN;
+    protected Set<Data> isNL;
     protected double numENCorrect;    // number of correctly identified EN phrases
     protected double numENIncorrect;  // number of incorrectly identified EN phrases
     private double remainder = -1;
@@ -36,7 +36,7 @@ public abstract class Feature implements Comparable<Feature>{
     public void getRemainder(List<Data> dataList){
         // reset any stored values
         this.isEN = new HashSet<>();
-        this.isNotEN = new HashSet<>();
+        this.isNL = new HashSet<>();
         this.numENCorrect = 0;
         this.numENIncorrect = 0;
 
@@ -46,21 +46,21 @@ public abstract class Feature implements Comparable<Feature>{
                 if(d.matchLanguage(Data.Language.EN))
                     this.numENCorrect++;
             } else {
-                this.isNotEN.add(d);
+                this.isNL.add(d);
                 if(d.matchLanguage(Data.Language.EN))
                     this.numENIncorrect++;
             }
         }
         // (numTrue / total) * B(numA / numTrue) + (numFalse / total) * B(numNotA / numFalse)
         this.remainder = ((double) this.isEN.size() / dataList.size()) * B(this.numENCorrect, this.isEN.size()) +
-                ((double) this.isNotEN.size() / dataList.size()) * B(this.numENIncorrect, this.isNotEN.size());
+                ((double) this.isNL.size() / dataList.size()) * B(this.numENIncorrect, this.isNL.size());
     }
 
     public Set<Data> getIsEN(){
         return this.isEN;
     }
-    public Set<Data> getIsNotEN(){
-        return this.isNotEN;
+    public Set<Data> getIsNL(){
+        return this.isNL;
     }
 
     protected abstract boolean isEnglish(Data data);

@@ -68,11 +68,10 @@ public class lab3 {
         // both dt and ada need tree, build
         Node dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
 
-//        if(learningType.equals("ada")){
-//
-//
-//        }
-//
+        if(learningType.equals("ada")){
+            dtRoot.adaBoost();
+        }
+
 
         try{
             assert dtRoot != null;

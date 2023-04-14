@@ -46,34 +46,91 @@ public class Node implements Serializable {
             parent.setMsg(target.toString());
 
         Node curNode = new Node(parent, examples);
-        // recurse left
-        curNode.setLIsEn(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
+        // recurse left if data
+        if(target.getIsEN().size() != 0)
+            curNode.setLIsEn(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
 
-        // recurse right
-        curNode.setRIsNl(buildTree(curNode, new ArrayList<>(target.getIsNotEN()), new ArrayList<>(features)));
+        // recurse right if data
+        if(target.getIsNL().size() != 0)
+            curNode.setRIsNl(buildTree(curNode, new ArrayList<>(target.getIsNL()), new ArrayList<>(features)));
 
         return curNode;
     }
 
-    private double getNumWrong(){
-        double thisWrong;
-//        if(this.parent == null)
+    // lang that shouldn't be in there
+    private double getError(Data.Language expected){
+        double enError = 0;
+        double nlError = 0;
 
-        return 0;
+        // base case, reach leaf
+        if(this.lIsEn == null && this.rIsNl == null){
+           double error = 0;
+           for(Data d : this.data){
+//               if(!d.matchLanguage(expected))
+//                   error += d.getWeight();
+               System.err.println(d);
+               error += d.getWeight();  // todo weight tied to node not data?
+           }
+           return error;
+        }
+
+        // check IsEnglish Dataset for the number of NL phrases
+        if(this.lIsEn != null)
+            enError = this.lIsEn.getError(Data.Language.EN);
+
+        // check IsDutch Dataset for the number of EN phrases
+        if(this.rIsNl != null)
+            nlError = this.rIsNl.getError(Data.Language.NL);
+
+
+        return enError + nlError;
+    }
+
+    private double updateWeight(Data.Language notExpected, double factor){
+        double enWeight = 0;
+        double nlWeight = 0;
+
+        // base case, reach leaf
+        if(this.lIsEn == null && this.rIsNl == null){
+            double weight = 0;
+            for(Data d : this.data){
+                if(!d.matchLanguage(notExpected))
+                    weight += d.updateWeight(factor);
+            }
+            return weight;
+        }
+
+        // check IsEnglish Dataset for the number of NL phrases
+        if(this.lIsEn != null)
+            enWeight = this.lIsEn.updateWeight(Data.Language.EN, factor);
+
+        // check IsDutch Dataset for the number of EN phrases
+        if(this.rIsNl != null)
+            nlWeight = this.rIsNl.updateWeight(Data.Language.NL, factor);
+
+
+        return enWeight + nlWeight;
     }
 
     public void adaBoost(){
 
 
+        double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
+        double update = error / (1 - error);
+        double newWeight = this.lIsEn.updateWeight(Data.Language.NL, update) + this.rIsNl.updateWeight(Data.Language.EN, update);
+        System.out.println(error);
+        System.out.println(newWeight);
 
 
-        // recurse left
-        if(this.lIsEn != null)
-            this.lIsEn.adaBoost();
-
-        // recurse right
-        if(this.rIsNl != null)
-            this.rIsNl.adaBoost();
+//
+//
+//        // recurse left
+//        if(this.lIsEn != null)
+//            this.lIsEn.adaBoost();
+//
+//        // recurse right
+//        if(this.rIsNl != null)
+//            this.rIsNl.adaBoost();
 
 
 
