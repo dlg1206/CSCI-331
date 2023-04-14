@@ -55,6 +55,24 @@ public class Node implements Serializable {
         return curNode;
     }
 
+    public void adaBoost(){
+
+
+
+
+        // recurse left
+        if(this.left != null)
+            this.left.adaBoost();
+
+        // recurse right
+        if(this.right != null)
+            this.right.adaBoost();
+
+
+
+    }
+
+
     public void serialize(String filepath) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ObjectOutputStream out = new ObjectOutputStream(bos);
@@ -73,7 +91,6 @@ public class Node implements Serializable {
         ByteArrayInputStream bin = new ByteArrayInputStream(nodeData);
         ObjectInputStream oin = new ObjectInputStream(bin);
         return (Node) oin.readObject();
-
     }
 
     @Override

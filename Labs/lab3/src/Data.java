@@ -40,9 +40,12 @@ public class Data implements Serializable {
     private final List<Letter> letters;
     private final LinkedHashSet<String> words;
     private double numChars = 0;
+    private double weight;
 
 
-    public Data(String fragment) throws LabException.BadDatFile {
+    public Data(String fragment, double weight) throws LabException.BadDatFile {
+
+        this.weight = weight;
 
         String[] components = fragment.split("\\|");
         if(components.length == 2){

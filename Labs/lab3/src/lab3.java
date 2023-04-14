@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,13 +23,18 @@ public class lab3 {
 
     private static List<Data> loadData(String filepath) throws Exception {
 
+        // get initial weight
+        Path path = Paths.get(filepath);
+        double initialWeight = 1.0 / Files.lines(path).parallel().count();
+
+
         BufferedReader br = new BufferedReader(new FileReader(filepath));
 
         String line = br.readLine();
         List<Data> dataList = new ArrayList<>();
 
         while (line != null){
-            dataList.add(new Data(line));
+            dataList.add(new Data(line, initialWeight));
             line = br.readLine();
         }
         br.close();
@@ -56,10 +64,15 @@ public class lab3 {
                 add(new FreqE());
             }
         };
-        Node dtRoot = null;
-        switch (learningType){
-            case "dt" -> dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
-        }
+
+        // both dt and ada need tree, build
+        Node dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
+
+//        if(learningType.equals("ada")){
+//
+//
+//        }
+//
 
         try{
             assert dtRoot != null;
@@ -67,6 +80,8 @@ public class lab3 {
         } catch (Exception e){
             System.err.println("Failed to write to file | Msg: " + e.getMessage());
         }
+
+
     }
 
     public static void predict(String hypothesis, String file){
