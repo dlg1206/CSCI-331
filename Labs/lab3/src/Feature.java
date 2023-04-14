@@ -81,7 +81,7 @@ class FreqE extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
-        return data.getFrequency('e') < 0.15;
+        return data.getPercent('e') < 0.15;
     }
 
     @Override
@@ -94,7 +94,7 @@ class tCount extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
-        return data.getCountIndex('t') == 2;
+        return data.getFrequencyIndex('t') == 2;
     }
 
     @Override
@@ -107,7 +107,7 @@ class nCount extends Feature {
 
     @Override
     protected boolean isEnglish(Data data) {
-        return data.getCountIndex('n') != 2;
+        return data.getFrequencyIndex('n') != 2;
     }
 
     @Override
