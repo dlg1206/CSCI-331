@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,24 +16,37 @@ import java.util.List;
  **/
 public class lab3 {
 
-
+    /**
+     * Tests if the file path
+     *
+     * @param path file path to test
+     * @throws LabException.BadArgs File doesn't exist
+     */
     private static void assertFileExists(String path) throws LabException.BadArgs {
         if(!new File(path).isFile())
             throw new LabException.BadArgs("\"" + path + "\" is does not exist");
     }
 
-    private static List<Data> loadData(String filepath) throws Exception {
+    /**
+     * Load data from file into an object
+     *
+     * @param filepath data file path
+     * @return list of all the loaded data
+     * @throws IOException File path is bad
+     * @throws LabException.BadDatFile Unable to read the data file
+     */
+    private static List<Data> loadData(String filepath) throws IOException, LabException.BadDatFile {
 
         // get initial weight
         Path path = Paths.get(filepath);
         double initialWeight = 1.0 / Files.lines(path).parallel().count();
 
-
+        // init vars
         BufferedReader br = new BufferedReader(new FileReader(filepath));
-
         String line = br.readLine();
         List<Data> dataList = new ArrayList<>();
 
+        // Create list of data objects
         while (line != null){
             dataList.add(new Data(line, initialWeight));
             line = br.readLine();
@@ -42,9 +56,15 @@ public class lab3 {
         return dataList;
     }
 
-
-
+    /**
+     * Generate a decision tree to a file with or without ada boosting
+     *
+     * @param examples file of training data
+     * @param hypothesisOut file to write model to
+     * @param learningType dt: generate decision tree | ada: generate decision tree and adaboost
+     */
     public static void train(String examples, String hypothesisOut, String learningType){
+        // Attempt to load the data from file
         List<Data> dataList;
         try{
             dataList = loadData(examples);
@@ -53,6 +73,7 @@ public class lab3 {
             return;
         }
 
+        // Populate the features list
         List<Feature> features = new ArrayList<>(){
             {
                 add(new tCount());
@@ -66,22 +87,30 @@ public class lab3 {
         // both dt and ada need tree, build
         Node dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
 
+        // adaboost if given
         if(learningType.equals("ada")){
+            assert dtRoot != null;
             dtRoot.adaBoost();
         }
 
-
+        // Try to write Decision Tree to file
         try{
             assert dtRoot != null;
             dtRoot.serialize(hypothesisOut);
         } catch (Exception e){
             System.err.println("Failed to write to file | Msg: " + e.getMessage());
         }
-
-
     }
 
+    /**
+     * Given a Decision Tree file, attempt to predict the language from a given file
+     *
+     * @param hypothesis path to decision tree model
+     * @param file path with test data
+     */
     public static void predict(String hypothesis, String file){
+
+        // Try to load test data from file
         Node dtRoot;
         List<Data> dataList;
         try{
@@ -90,6 +119,8 @@ public class lab3 {
             System.err.println("Failed to load .dat file | Msg: " + e.getMessage());
             return;
         }
+
+        // Try to load decision tree from file
         try{
             dtRoot = Node.deSerialize(hypothesis);
         } catch (Exception e){
@@ -97,6 +128,7 @@ public class lab3 {
             return;
         }
 
+        // todo better comment
         double count = dataList.size();
         double correct = 0;
         for(Data d : dataList){
@@ -115,7 +147,12 @@ public class lab3 {
         System.out.println(correct / count);
     }
 
-    private static boolean validArgs(String[] args){
+    /**
+     * Driver function
+     *
+     * @param args training or test args
+     */
+    public static void main(String[] args) {
 
         // validate args
         try{
@@ -157,26 +194,16 @@ public class lab3 {
             System.err.println("BadArgsError: " + e.getLocalizedMessage());
             System.err.println("Expected Usage: java lab3 train <examples> <hypothesisOut> <learning-type>");
             System.err.println("Expected Usage: java lab3 predict <hypothesis> <file>");
-            return false;
+            return;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return;
         }
 
-        // args ok
-        return true;
-    }
-
-    public static void main(String[] args) {
-        if(!validArgs(args))
-            return;
-
+        // OK, run based on keyword
         switch (args[0]){
             case "train" ->     train(args[1], args[2], args[3]);
             case "predict" ->   predict(args[1], args[2]);
         }
-
-
-
     }
 }
