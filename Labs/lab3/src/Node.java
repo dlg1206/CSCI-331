@@ -7,12 +7,12 @@ import java.util.List;
 
 
 public class Node implements Serializable {
-    private final Node parent;
+    private final Node parentNode;
     private Node lIsEn;
     private Node rIsNl;
 
     private final List<Data> data;
-    private String msg;
+    private String msg = "root";
 
 
     public void setLIsEn(Node left) {
@@ -26,9 +26,10 @@ public class Node implements Serializable {
         this.msg = msg;
     }
 
-    private Node(Node parent, List<Data> data){
-        this.parent = parent;
+    private Node(Node parent, List<Data> data, String msg){
+        this.parentNode = parent;
         this.data = data;
+        this.msg = msg;
     }
 
     public static Node buildTree(Node parent, List<Data> examples, List<Feature> features){
@@ -42,20 +43,30 @@ public class Node implements Serializable {
         }
         Collections.sort(features);
         Feature target = features.remove(0);
-        if(parent != null)
-            parent.setMsg(target.toString());
 
-        Node curNode = new Node(parent, examples);
+        Node curNode = new Node(parent, examples, target.toString());
+
         // recurse left if data
         if(target.getIsEN().size() != 0)
-            curNode.setLIsEn(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
+            curNode.setLIsEn(buildTree(
+                    new Node(parent, examples, target.toString()),
+                    new ArrayList<>(target.getIsEN()),
+                    new ArrayList<>(features))
+            );
 
         // recurse right if data
         if(target.getIsNL().size() != 0)
-            curNode.setRIsNl(buildTree(curNode, new ArrayList<>(target.getIsNL()), new ArrayList<>(features)));
+            curNode.setRIsNl(buildTree(
+                    new Node(parent, examples, target.toString()),
+                    new ArrayList<>(target.getIsNL()),
+                    new ArrayList<>(features))
+            );
 
         return curNode;
     }
+
+
+
 
     // lang that shouldn't be in there
     private double getError(Data.Language expected){
@@ -63,20 +74,20 @@ public class Node implements Serializable {
         double nlError = 0;
 
         // base case, reach leaf
-        if(this.lIsEn == null && this.rIsNl == null){
+        if(this.lIsEn == null || this.rIsNl == null){
            double error = 0;
            for(Data d : this.data){
 //               if(!d.matchLanguage(expected))
 //                   error += d.getWeight();
                System.err.println(d);
                error += d.getWeight();  // todo weight tied to node not data?
+               d.updateWeight(-1);
            }
            return error;
         }
 
         // check IsEnglish Dataset for the number of NL phrases
-        if(this.lIsEn != null)
-            enError = this.lIsEn.getError(Data.Language.EN);
+        enError = this.lIsEn.getError(Data.Language.EN);
 
         // check IsDutch Dataset for the number of EN phrases
         if(this.rIsNl != null)
@@ -112,8 +123,34 @@ public class Node implements Serializable {
         return enWeight + nlWeight;
     }
 
-    public void adaBoost(){
+    private void walk(String path) {
+        double weight = 0;
+        for(Data d : this.data){
+            weight += d.getWeight();
+        }
 
+        if (this.lIsEn == null || this.rIsNl == null) {
+
+            System.out.println(path + this + " : " + weight);
+            return;
+        }
+        path += this.toString();
+
+        // check IsEnglish Dataset for the number of NL phrases
+        if (this.lIsEn != null)
+            this.lIsEn.walk(path + "L-[" + weight + "] -> ");
+        else
+            System.out.println(path + "L-[" + weight + "]");
+
+        // check IsDutch Dataset for the number of EN phrases
+        if (this.rIsNl != null)
+            this.rIsNl.walk(path + "R-[" + weight + "] -> ");
+        else
+            System.out.println(path + "R-[" + weight + "]");
+    }
+
+    public void adaBoost(){
+        walk("");
 
         double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
         double update = error / (1 - error);
