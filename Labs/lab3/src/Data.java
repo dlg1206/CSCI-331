@@ -41,6 +41,7 @@ public class Data implements Serializable {
     private final LinkedHashSet<String> words;
     private double numChars = 0;
     private double weight;
+    private boolean isCorrect = true;
 
 
     public Data(String fragment, double weight) throws LabException.BadDatFile {
@@ -113,6 +114,13 @@ public class Data implements Serializable {
         return this.trainingLang == l;
     }
 
+    public boolean isCorrect(){
+        return this.isCorrect;
+    }
+
+    public void flagError(){
+        this.isCorrect = false;
+    }
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

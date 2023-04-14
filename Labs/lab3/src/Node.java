@@ -77,8 +77,10 @@ public class Node implements Serializable {
         if(this.lIsEn == null || this.rIsNl == null){
            double error = 0;
            for(Data d : this.data){
-               if(!d.matchLanguage(expected))
+               if(!d.matchLanguage(expected)){
                    error += d.getWeight();
+                   d.flagError();
+               }
 
            }
            return error;
@@ -95,53 +97,23 @@ public class Node implements Serializable {
         return enError + nlError;
     }
 
-    private double updateWeight(Data.Language notExpected, double factor){
-        double enWeight = 0;
-        double nlWeight = 0;
-
-        // base case, reach leaf
-        if(this.lIsEn == null && this.rIsNl == null){
-            double weight = 0;
-            for(Data d : this.data){
-                if(!d.matchLanguage(notExpected))
-                    weight += d.updateWeight(factor);
-            }
-            return weight;
-        }
-
-        // check IsEnglish Dataset for the number of NL phrases
-        if(this.lIsEn != null)
-            enWeight = this.lIsEn.updateWeight(Data.Language.EN, factor);
-
-        // check IsDutch Dataset for the number of EN phrases
-        if(this.rIsNl != null)
-            nlWeight = this.rIsNl.updateWeight(Data.Language.NL, factor);
-
-
-        return enWeight + nlWeight;
-    }
 
 
     public void adaBoost(){
 
         double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
         double update = error / (1 - error);
-        double newWeight = this.lIsEn.updateWeight(Data.Language.NL, update) + this.rIsNl.updateWeight(Data.Language.EN, update);
-        System.out.println(error);
-        System.out.println(newWeight);
+        double newWeight = 0;
+        for(Data d : this.data){
+            if(d.isCorrect())
+                d.updateWeight(update);
+            newWeight += d.getWeight();
+        }
 
-
-//
-//
-//        // recurse left
-//        if(this.lIsEn != null)
-//            this.lIsEn.adaBoost();
-//
-//        // recurse right
-//        if(this.rIsNl != null)
-//            this.rIsNl.adaBoost();
-
-
+        double normalizeFactor = 1 / newWeight;
+        for(Data d : this.data){
+            d.updateWeight(normalizeFactor);
+        }
 
     }
 
