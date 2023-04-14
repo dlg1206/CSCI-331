@@ -97,9 +97,22 @@ public class lab3 {
             return;
         }
 
+        double count = dataList.size();
+        double correct = 0;
         for(Data d : dataList){
-            System.out.println(dtRoot.predict(d) + " : " + d);
+            String out = dtRoot.predict(d);
+            System.out.println( out + " : " + d);
+            Data.Language lang;
+            if(out.equals("en")){
+                lang = Data.Language.EN;
+            } else {
+                lang = Data.Language.NL;
+            }
+
+            if(d.matchLanguage(lang))
+                correct++;
         }
+        System.out.println(correct / count);
     }
 
     private static boolean validArgs(String[] args){
