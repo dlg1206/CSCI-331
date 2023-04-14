@@ -56,13 +56,14 @@ public class lab3 {
                 add(new FreqE());
             }
         };
-        DecisionTree.Node dtRoot = null;
+        Node dtRoot = null;
         switch (learningType){
-            case "dt" -> dtRoot = DecisionTree.trainRecursive(null, new ArrayList<>(dataList), new ArrayList<>(features));
+            case "dt" -> dtRoot = Node.buildTree(null, new ArrayList<>(dataList), new ArrayList<>(features));
         }
 
         try{
-            DecisionTree.serializeNode(dtRoot, hypothesisOut);
+            assert dtRoot != null;
+            dtRoot.serialize(hypothesisOut);
         } catch (Exception e){
             System.err.println("Failed to write to file | Msg: " + e.getMessage());
         }

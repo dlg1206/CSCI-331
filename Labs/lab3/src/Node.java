@@ -4,43 +4,34 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-public class DecisionTree {
-
-    public static class Node implements Serializable {
-        private final Node parent;
-        private Node left;
-        private Node right;
-
-        private final List<Data> data;
-        private String msg;
 
 
-        public Node(Node parent, List<Data> data){
-            this.parent = parent;
-            this.data = data;
-        }
+public class Node implements Serializable {
+    private final Node parent;
+    private Node left;
+    private Node right;
 
-        public void setLeft(Node left) {
-            this.left = left;
-        }
-        public void setRight(Node right){
-            this.right = right;
-        }
+    private final List<Data> data;
+    private String msg;
 
-        public void setMsg(String msg){
-            this.msg = msg;
-        }
 
-        @Override
-        public String toString() {
-            return this.msg;
-        }
+    public void setLeft(Node left) {
+        this.left = left;
+    }
+    public void setRight(Node right){
+        this.right = right;
     }
 
+    public void setMsg(String msg){
+        this.msg = msg;
+    }
 
-    public static Node trainRecursive(Node parent, List<Data> examples, List<Feature> features){
+    private Node(Node parent, List<Data> data){
+        this.parent = parent;
+        this.data = data;
+    }
+
+    public static Node buildTree(Node parent, List<Data> examples, List<Feature> features){
 
         // Base case: Only 1 example or run out of features
         if(examples.size() == 1 || features.isEmpty())
@@ -56,18 +47,18 @@ public class DecisionTree {
 
         Node curNode = new Node(parent, examples);
         // recurse left
-        curNode.setLeft(trainRecursive(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
+        curNode.setLeft(buildTree(curNode, new ArrayList<>(target.getIsEN()), new ArrayList<>(features)));
 
         // recurse right
-        curNode.setRight(trainRecursive(curNode, new ArrayList<>(target.getIsNotEN()), new ArrayList<>(features)));
+        curNode.setRight(buildTree(curNode, new ArrayList<>(target.getIsNotEN()), new ArrayList<>(features)));
 
         return curNode;
     }
 
-    public static void serializeNode(Node node, String filepath) throws IOException {
+    public void serialize(String filepath) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ObjectOutputStream out = new ObjectOutputStream(bos);
-            out.writeObject(node);
+            out.writeObject(this);
             out.flush();
 
             try (FileOutputStream outputStream = new FileOutputStream(filepath)) {
@@ -77,11 +68,16 @@ public class DecisionTree {
         System.out.println("DecisionTree written to file \"" + filepath + "\"");
     }
 
-    public static Node deSerializeNode(String filepath) throws IOException, ClassNotFoundException {
+    public static Node deSerialize(String filepath) throws IOException, ClassNotFoundException {
         byte[] nodeData = Files.readAllBytes(Paths.get(filepath));
         ByteArrayInputStream bin = new ByteArrayInputStream(nodeData);
         ObjectInputStream oin = new ObjectInputStream(bin);
         return (Node) oin.readObject();
 
+    }
+
+    @Override
+    public String toString() {
+        return this.msg;
     }
 }
