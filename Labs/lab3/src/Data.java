@@ -77,13 +77,18 @@ public class Data implements Serializable {
         if (index == -1)
             return 0;
 
-        return this.letters.get(index).occurrences / this.numChars;
+        try{
+            return this.letters.get(index).occurrences / this.numChars;
+        } catch (Exception e){
+            return 0;
+        }
+
     }
 
     public int getCountIndex(char c) {
         for(int i = 0; i < this.letters.size(); i++){
             if(this.letters.get(i).value == c)
-                return i + 1;
+                return i;
         }
         return -1;
     }
