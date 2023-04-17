@@ -133,7 +133,8 @@ public class lab3 {
         double correct = 0;
         for(Data d : dataList){
             String out = dtRoot.predict(d);
-            System.out.println( out + " : " + d);
+            // System.out.println( out + " : " + d);
+            System.out.println(out);
             Data.Language lang;
             if(out.equals("en")){
                 lang = Data.Language.EN;
@@ -144,7 +145,7 @@ public class lab3 {
             if(d.matchLanguage(lang))
                 correct++;
         }
-        System.out.println(correct / count);
+        //System.out.println(correct / count);
     }
 
     /**
