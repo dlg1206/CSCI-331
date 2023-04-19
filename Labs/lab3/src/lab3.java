@@ -74,13 +74,19 @@ public class lab3 {
         }
 
         // Populate the features list
+        // baseline: 0.846571622539036
         List<Feature> features = new ArrayList<>(){
             {
-                add(new tCount());
-                add(new nCount());
-                add(new enArticles());
-                add(new nlArticles());
-                add(new FreqE());
+//                add(new tCount());          // 0.7270875763747454
+//                add(new nCount());          // 0.2905634758995248
+//                add(new enArticles());      // 0.846571622539036
+                add(new nlArticles());        // 0.2905634758995248
+//                add(new FreqE());           // 0.846571622539036
+//                add(new enDemonPronouns()); // 0.8608282416836388
+//                add(new doubleVowels());
+                add(new wordLength());
+
+
             }
         };
 
@@ -135,7 +141,7 @@ public class lab3 {
         double correct = 0;
         for(Data d : dataList){
             String out = dtRoot.predict(d);
-             System.out.println( out + " : " + d);
+
 //            System.out.println(out);
             Data.Language lang;
             if(out.equals("en")){
@@ -144,8 +150,13 @@ public class lab3 {
                 lang = Data.Language.NL;
             }
 
-            if(d.matchLanguage(lang))
+            if(d.matchLanguage(lang)){
+//                System.out.println( out + " : " + d);
                 correct++;
+            } else {
+                System.err.println( out + " : " + d);
+            }
+
         }
         System.out.println(correct / count);
     }

@@ -179,6 +179,7 @@ class enArticles extends Feature {
         {
             add("the");
             add("an");
+            add("a");
         }
     };
     @Override
@@ -223,3 +224,50 @@ class nlArticles extends Feature {
     }
 }
 
+/**
+ * Check for English demonstrative pronouns
+ * Not Found:   nl
+ * Found:       en
+ */
+class doubleVowels extends Feature {
+    private final List<String> doubleVowels = new ArrayList<>() {
+        {
+            add("aa");
+        }
+    };
+
+    @Override
+    protected boolean isEnglish(Data data) {
+        for (String pair : this.doubleVowels){
+            for(String word : data.getWords()){
+                if(word.contains(pair))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected String getTestName() {
+        return "check for double vowels";
+    }
+}
+
+class wordLength extends Feature {
+
+    @Override
+    protected boolean isEnglish(Data data) {
+
+        for(String word : data.getWords()){
+            if(word.length() > 6)
+                return false;
+
+        }
+        return true;
+    }
+
+    @Override
+    protected String getTestName() {
+        return "check for double vowels";
+    }
+}

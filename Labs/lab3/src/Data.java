@@ -184,6 +184,10 @@ public class Data implements Serializable {
         this.isCorrect = false;
     }
 
+    public LinkedHashSet<String> getWords() {
+        return this.words;
+    }
+
     // return all the words stored
     @Override
     public String toString() {

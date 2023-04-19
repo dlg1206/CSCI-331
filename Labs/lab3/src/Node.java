@@ -98,19 +98,25 @@ public class Node implements Serializable {
      */
     public String predict(Data data){
 
-        // Predict left if exists
-        if(this.lIsEn != null)
-            return this.lIsEn.predict(data);
-
-        // Predict right if exists
-        if(this.rIsNl != null)
-            return this.rIsNl.predict(data);
+        boolean isEnglish = this.feature.isEnglish(data);
 
         // base case
-        if(this.feature.isEnglish(data))
-            return "en";
+        if(this.lIsEn == null && this.rIsNl == null){
+            if(isEnglish)
+                return "en";
+            else
+                return "nl";
+        }
+
+        // Else test children
+        if(isEnglish) {
+            assert lIsEn != null;
+            return lIsEn.predict(data);
+        }
         else
-            return "nl";
+            return rIsNl.predict(data);
+
+
     }
 
 
