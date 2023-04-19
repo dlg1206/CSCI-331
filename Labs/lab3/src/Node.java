@@ -56,18 +56,23 @@ public class Node implements Serializable {
      */
     public static Node buildTree(List<Data> examples, List<Feature> features){
 
-        // Base case: Only 1 example or run out of features
-        if(examples.size() == 1 || features.isEmpty())
+        // Base case: Run out of features
+        if(features.isEmpty())
             return null;
 
         // Find lowest remainder
         for(Feature f: features){
             f.getRemainder(examples);
         }
+
         Collections.sort(features);
         Feature target = features.remove(0);
 
+
         Node curNode = new Node(examples, target);  // make new node
+        if(examples.size() == 4){
+            int a = 1;
+        }
         // recurse left if data
         if(target.getIsEN().size() != 0)
             curNode.setLIsEn(buildTree(
@@ -81,11 +86,12 @@ public class Node implements Serializable {
                     new ArrayList<>(target.getIsNL()),
                     new ArrayList<>(features))
             );
+
         return curNode;
     }
 
     /**
-     * Predict the data language todo done correct?
+     * Predict the data language
      *
      * @param data Data to predict
      * @return en if English, nl if Dutch
@@ -206,6 +212,8 @@ public class Node implements Serializable {
         // Cast new node
         return (Node) oin.readObject();
     }
-
-
+    @Override
+    public String toString(){
+        return this.feature.toString();
+    }
 }
