@@ -96,12 +96,13 @@ public class Node implements Serializable {
      */
     public String predict(Data data){
 
+        // test if english
         boolean isEnglish = this.feature.isEnglish(data);
 
         // base case
-        if(this._true == null && this._false == null){
+        if(this._true == null && this._false == null)
             return this.toString();     // sums weight of data, picks en or nl based on larger sum
-        }
+
 
         // Else test children
         if(isEnglish) {
@@ -112,8 +113,7 @@ public class Node implements Serializable {
             if(this._false != null)
                 return this._false.predict(data);
         }
-        return null;
-
+        return null;    // shouldn't reach here
     }
 
 
@@ -218,8 +218,10 @@ public class Node implements Serializable {
 
     @Override
     public String toString(){
+        // get string based on weight of data
         double en = 0;
         double nl = 0;
+        // sum weight accordingly
         for(Data d : this.data){
             if(d.matchLanguage(Data.Language.EN)){
                 en += d.getWeight();
@@ -228,6 +230,7 @@ public class Node implements Serializable {
             }
         }
 
+        // return based on weight
         if(en > nl){
             return "en";
         } else {
