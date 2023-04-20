@@ -77,16 +77,13 @@ public class lab3 {
         // baseline: 0.846571622539036
         List<Feature> features = new ArrayList<>(){
             {
-//                add(new tCount());          // 0.7270875763747454
-//                add(new nCount());          // 0.2905634758995248
-//                add(new enArticles());      // 0.846571622539036
+                add(new tCount());          // 0.7270875763747454
+                add(new nCount());          // 0.2905634758995248
+                add(new enArticles());      // 0.846571622539036
                 add(new nlArticles());        // 0.2905634758995248
-//                add(new FreqE());           // 0.846571622539036
-//                add(new enDemonPronouns()); // 0.8608282416836388
-//                add(new doubleVowels());
+                add(new FreqE());           // 0.846571622539036
+                add(new doubleVowels());
                 add(new wordLength());
-
-
             }
         };
 
@@ -144,6 +141,8 @@ public class lab3 {
 
 //            System.out.println(out);
             Data.Language lang;
+            if(out == null)
+                continue;
             if(out.equals("en")){
                 lang = Data.Language.EN;
             } else {

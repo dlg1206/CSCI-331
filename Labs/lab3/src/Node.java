@@ -12,8 +12,8 @@ import java.util.List;
  * @author Derek Garcia
  */
 public class Node implements Serializable {
-    private Node lIsEn;     // left-isEnglish
-    private Node rIsNl;     // right-isDutch
+    private Node _true;     // left-isEnglish
+    private Node _false;     // right-isDutch
 
     // Values
     private final List<Data> data;
@@ -36,7 +36,7 @@ public class Node implements Serializable {
      * @param left left node
      */
     public void setLIsEn(Node left) {
-        this.lIsEn = left;
+        this._true = left;
     }
 
     /**
@@ -44,7 +44,7 @@ public class Node implements Serializable {
      * @param right right node
      */
     public void setRIsNl(Node right){
-        this.rIsNl = right;
+        this._false = right;
     }
 
     /**
@@ -65,14 +65,12 @@ public class Node implements Serializable {
             f.getRemainder(examples);
         }
 
+        // sort and pop features
         Collections.sort(features);
         Feature target = features.remove(0);
 
-
         Node curNode = new Node(examples, target);  // make new node
-        if(examples.size() == 4){
-            int a = 1;
-        }
+
         // recurse left if data
         if(target.getIsEN().size() != 0)
             curNode.setLIsEn(buildTree(
@@ -101,21 +99,20 @@ public class Node implements Serializable {
         boolean isEnglish = this.feature.isEnglish(data);
 
         // base case
-        if(this.lIsEn == null && this.rIsNl == null){
-            if(isEnglish)
-                return "en";
-            else
-                return "nl";
+        if(this._true == null && this._false == null){
+            return this.toString();     // sums weight of data, picks en or nl based on larger sum
         }
 
         // Else test children
         if(isEnglish) {
-            assert lIsEn != null;
-            return lIsEn.predict(data);
+            if(this._true != null)
+                return this._true.predict(data);
         }
-        else
-            return rIsNl.predict(data);
-
+        else{
+            if(this._false != null)
+                return this._false.predict(data);
+        }
+        return null;
 
     }
 
@@ -131,7 +128,7 @@ public class Node implements Serializable {
         double nlError = 0;
 
         // base case, reach leaf
-        if(this.lIsEn == null || this.rIsNl == null){
+        if(this._true == null || this._false == null){
            double error = 0;
            for(Data d : this.data){
                // If doesn't match expected, update error and flag
@@ -144,11 +141,11 @@ public class Node implements Serializable {
         }
 
         // check IsEnglish Dataset for the number of NL phrases
-        enError = this.lIsEn.getError(Data.Language.EN);
+        enError = this._true.getError(Data.Language.EN);
 
         // check IsDutch Dataset for the number of EN phrases
-        if(this.rIsNl != null)
-            nlError = this.rIsNl.getError(Data.Language.NL);
+        if(this._false != null)
+            nlError = this._false.getError(Data.Language.NL);
 
         // return total error
         return enError + nlError;
@@ -161,7 +158,7 @@ public class Node implements Serializable {
     public void adaBoost(){
 
         // Calculate update
-        double error = this.lIsEn.getError(Data.Language.EN) + this.rIsNl.getError(Data.Language.NL);
+        double error = this._true.getError(Data.Language.EN) + this._false.getError(Data.Language.NL);
         double update = error / (1 - error);
 
         // Update weights
@@ -218,8 +215,23 @@ public class Node implements Serializable {
         // Cast new node
         return (Node) oin.readObject();
     }
+
     @Override
     public String toString(){
-        return this.feature.toString();
+        double en = 0;
+        double nl = 0;
+        for(Data d : this.data){
+            if(d.matchLanguage(Data.Language.EN)){
+                en += d.getWeight();
+            } else {
+                nl += d.getWeight();
+            }
+        }
+
+        if(en > nl){
+            return "en";
+        } else {
+            return "nl";
+        }
     }
 }
