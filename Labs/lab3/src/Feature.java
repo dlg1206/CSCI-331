@@ -220,14 +220,14 @@ class nlArticles extends Feature {
     }
     @Override
     protected String getTestName() {
-        return "nl articles, f:en t:nl";
+        return "Dutch Articles";
     }
 }
 
 /**
- * Check for English demonstrative pronouns
- * Not Found:   nl
- * Found:       en
+ * Check for double vowels
+ * Not Found:   en
+ * Found:       nl
  */
 class doubleVowels extends Feature {
     private final List<String> doubleVowels = new ArrayList<>() {
@@ -249,10 +249,16 @@ class doubleVowels extends Feature {
 
     @Override
     protected String getTestName() {
-        return "check for double vowels";
+        return "Dutch Double Vowels";
     }
 }
 
+
+/**
+ * Checks for the word length
+ * >6 chars:    nl
+ * <= 6 chars:  en
+ */
 class wordLength extends Feature {
 
     @Override
@@ -261,7 +267,6 @@ class wordLength extends Feature {
         for(String word : data.getWords()){
             if(word.length() > 6)
                 return false;
-
         }
         return true;
     }

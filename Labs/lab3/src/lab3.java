@@ -130,7 +130,6 @@ public class lab3 {
             return;
         }
 
-        // todo better comment
         for(Data d : dataList) {
             System.out.println(dtRoot.predict(d));
         }
